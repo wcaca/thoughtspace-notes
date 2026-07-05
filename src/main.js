@@ -1,148 +1,144 @@
 /**
- * [INPUT]: 全体 src/ 模块(render/canvas, persistence/yjs-store, sim/force-engine, core, ui/toolbar, render/*) + pixi.js
- * [OUTPUT]: 全站运行,one-time bootstrap + 持续帧循环
+ * [INPUT]: three.js, 全体模块, yjs-store, core/thought/edge/structure, convex-hull, cube-camera
+ * [OUTPUT]: 全站 bootstrap — 初始化场景/相机/交互/力导向/念头/UI
  * [POS]: 顶层入口,被 index.html 引用
  * [PROTOCOL]: 变更时更新此头部,然后检查 ../CLAUDE.md
  */
-import * as PIXI from 'pixi.js';
-import { createApp, drawBackgroundDust } from './render/canvas.js';
-import { initPersistence, getDoc, getThoughts, getEdges, transact, getUndoManager } from './persistence/yjs-store.js';
-import { createSimulation, restartSimulation, pinNode, unpinNode } from './sim/force-engine.js';
+import * as THREE from 'three';
+import { createScene } from './render/scene.js';
+import { createCubeCamera, createFaceIndicator } from './topology/cube-camera.js';
+import { createThoughtMesh, updateThoughtMesh, highlightThought, unhighlightThought } from './render/thought-sphere.js';
+import { createHullMesh } from './render/hull-mesh.js';
+import { createSedimentLayer } from './render/sediment-layer.js';
+import { computeHull } from './topology/convex-hull.js';
+import { createSim3D, restartSim } from './sim/force-3d.js';
+import { initPersistence, getThoughts, getEdges, getUndoManager, transact } from './persistence/yjs-store.js';
 import { createThought, decayTemperature, refreshTemperature } from './core/thought.js';
 import { createEdge, RelationType } from './core/edge.js';
-import { makeThoughtSprite } from './render/thought-node.js';
-import { makeEdgeLine } from './render/edge-line.js';
-import { createOverlayPanel } from './render/overlay-panel.js';
-import { createToolbar } from './ui/toolbar.js';
 
-await initPersistence('thoughtspace-notes-phase0');
-const ydoc = getDoc();
+const container = document.getElementById('stage');
+
+await initPersistence('topology-space-phase0');
 const yThoughts = getThoughts();
 const yEdges = getEdges();
 const undoManager = getUndoManager();
 
-const { app, world } = createApp(document.getElementById('stage'));
-drawBackgroundDust(world);
+const { scene, camera, renderer } = createScene(container);
+const cubeCam = createCubeCamera(camera, container);
+const faceIndicator = createFaceIndicator(document.body);
+const sediment = createSedimentLayer(scene);
 
-const nodeLayer = new PIXI.Container();
-const edgeLayer = new PIXI.Container();
-world.addChild(edgeLayer);
-world.addChild(nodeLayer);
+cubeCam.onFaceChange((face) => faceIndicator.update(face));
 
-const spriteById = new Map();
+const meshesById = new Map();
 let simState = null;
-let shiftSelecting = null;
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
 
-const statT = document.getElementById('stat-thoughts');
-const statE = document.getElementById('stat-edges');
-const statFPS = document.getElementById('stat-fps');
-let fpsAcc = 0;
-
-app.ticker.add(() => {
-  fpsAcc++;
-  redrawEdges();
-});
-
-setInterval(() => {
-  statFPS.textContent = fpsAcc;
-  fpsAcc = 0;
-  statT.textContent = yThoughts.size;
-  statE.textContent = yEdges.size;
-}, 1000);
-
-function redrawEdges() {
-  edgeLayer.removeChildren();
-  for (const e of yEdges.values()) {
-    const a = spriteById.get(e.fromId);
-    const b = spriteById.get(e.toId);
-    if (!a || !b) continue;
-    edgeLayer.addChild(makeEdgeLine(a, b, e.relationType));
-  }
-}
-
-function rebuildScene() {
-  nodeLayer.removeChildren();
-  spriteById.clear();
-  for (const t of yThoughts.values()) {
-    const s = makeThoughtSprite(t, {
-      onDrag: (id, x, y) => {
-        if (simState) pinNode(simState.idToNode, id, x, y);
-      },
-      onDragEnd: (id, x, y) => {
-        const node = simState?.idToNode?.get(id);
-        if (node) unpinNode(simState.idToNode, id);
-        transact(() => {
-          const t = yThoughts.get(id);
-          if (t) yThoughts.set(id, { ...t, x, y });
-        }, 'user');
-      },
-      onClick: (thought) => {
-        createOverlayPanel(thought, document.body, {
-          onSave: (id, text) => {
-            transact(() => {
-              const t = yThoughts.get(id);
-              if (t) yThoughts.set(id, { ...t, text });
-            }, 'user');
-          },
-          onDelete: (id) => {
-            transact(() => {
-              yThoughts.delete(id);
-              for (const [eid, e] of yEdges) {
-                if (e.fromId === id || e.toId === id) yEdges.delete(eid);
-              }
-            }, 'user');
-          }
-        });
-      },
-      onShiftClick: (thought) => {
-        if (!shiftSelecting) {
-          shiftSelecting = thought.id;
-          return;
-        }
-        if (shiftSelecting !== thought.id) {
-          const eid = `e_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
-          transact(() => {
-            yEdges.set(eid, createEdge(eid, shiftSelecting, thought.id, RelationType.PARALLEL));
-          }, 'user');
-        }
-        shiftSelecting = null;
-      }
-    });
-    spriteById.set(t.id, s);
-    nodeLayer.addChild(s);
-  }
-}
-
+// ---- 力导向 ----
 function rebuildSim() {
   const thoughts = Array.from(yThoughts.values());
   const edges = Array.from(yEdges.values());
-  simState = createSimulation(thoughts, edges);
+  simState = createSim3D(thoughts, edges);
   simState.sim.on('tick', () => {
-    if (simState.sim.alpha() < 0.05) return;
+    if (simState?.sim?.alpha() < 0.02) return;
     transact(() => {
       for (const n of simState.nodes) {
         const t = yThoughts.get(n.id);
-        if (t && (Math.abs(t.x - n.x) > 0.1 || Math.abs(t.y - n.y) > 0.1))
-          yThoughts.set(n.id, { ...t, x: n.x, y: n.y });
+        if (t) yThoughts.set(n.id, { ...t, x: n.x, y: n.y, z: n.z });
       }
     }, 'sim');
   });
-  restartSimulation(simState.sim, 0.6);
+  restartSim(simState.sim, 0.5);
 }
 
-yThoughts.observeDeep(() => { rebuildSim(); requestAnimationFrame(rebuildScene); });
-yEdges.observeDeep(() => { rebuildSim(); requestAnimationFrame(rebuildScene); });
+// ---- 场景重建 ----
+function rebuildScene() {
+  for (const mesh of meshesById.values()) {
+    scene.remove(mesh);
+  }
+  meshesById.clear();
 
-app.stage.on('pointerdown', (e) => {
-  if (e.target !== app.stage) return;
-  if (e.shiftKey) return;
-  const local = world.toLocal(new PIXI.Point(e.global.x, e.global.y));
-  const id = `t_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+  for (const t of yThoughts.values()) {
+    const group = createThoughtMesh(t);
+    scene.add(group);
+    meshesById.set(t.id, group);
+  }
+
+  // 凸包渲染
+  const hullData = computeHull(Array.from(yThoughts.values()));
+  const hullGroup = scene.getObjectByName('hull-structure');
+  if (hullGroup) scene.remove(hullGroup);
+  if (hullData.valid) {
+    const hg = createHullMesh(hullData);
+    if (hg) { hg.name = 'hull-structure'; scene.add(hg); }
+  }
+
+  rebuildSim();
+}
+
+yThoughts.observeDeep(() => requestAnimationFrame(rebuildScene));
+yEdges.observeDeep(() => requestAnimationFrame(rebuildScene));
+
+// ---- 交互: 点击空白投念头 ----
+renderer.domElement.addEventListener('click', (e) => {
+  const rect = renderer.domElement.getBoundingClientRect();
+  mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+  mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+
+  raycaster.setFromCamera(mouse, camera);
+  const intersects = raycaster.intersectObjects(scene.children, true);
+
+  if (intersects.length === 0) {
+    // 点击空白
+    const front = cubeCam.getCameraFront();
+    const spawnDist = 400;
+    const pos = camera.position.clone().add(front.multiplyScalar(spawnDist));
+    const id = `t_${Date.now()}`;
+    transact(() => {
+      yThoughts.set(id, createThought(id, '', pos.x, pos.y, pos.z));
+    }, 'user');
+    return;
+  }
+
+  // 点击了某个念头
+  let clickedGroup = intersects[0].object;
+  while (clickedGroup && !clickedGroup.userData?.thoughtId) {
+    clickedGroup = clickedGroup.parent;
+  }
+  if (clickedGroup?.userData?.thoughtId) {
+    highlightThought(clickedGroup);
+    setTimeout(() => unhighlightThought(clickedGroup), 2000);
+  }
+});
+
+// ---- 双击念头: 捞起+激活 ----
+renderer.domElement.addEventListener('dblclick', (e) => {
+  const rect = renderer.domElement.getBoundingClientRect();
+  mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+  mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+
+  raycaster.setFromCamera(mouse, camera);
+  const intersects = raycaster.intersectObjects(scene.children, true);
+
+  let clickedGroup = intersects[0]?.object;
+  while (clickedGroup && !clickedGroup.userData?.thoughtId) {
+    clickedGroup = clickedGroup.parent;
+  }
+  if (!clickedGroup?.userData?.thoughtId) return;
+
+  const tId = clickedGroup.userData.thoughtId;
   transact(() => {
-    yThoughts.set(id, createThought(id, '', local.x, local.y));
+    const t = yThoughts.get(tId);
+    if (!t) return;
+    const now = Date.now();
+    const refreshed = refreshTemperature(t, now);
+    refreshed.y = Math.max(refreshed.y ?? 0, 300);
+    yThoughts.set(tId, refreshed);
   }, 'user');
 });
 
+// ---- Ctrl+Z / Ctrl+Y ----
 document.addEventListener('keydown', (e) => {
   if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
     e.preventDefault();
@@ -154,42 +150,42 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
-createToolbar(document.body, {
-  onAdd: () => {
-    const id = `t_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
-    const x = (Math.random() - 0.5) * 600;
-    const y = (Math.random() - 0.5) * 400;
-    transact(() => { yThoughts.set(id, createThought(id, '新念头', x, y)); }, 'user');
-  },
-  onReset: () => { if (simState) restartSimulation(simState.sim, 1); },
-  onSample: () => {
-    if (yThoughts.size > 0) return;
-    seedSample();
-  },
-  onClear: () => { transact(() => { yThoughts.clear(); yEdges.clear(); }); }
-});
+// ---- 渲染循环 ----
+function animate() {
+  requestAnimationFrame(animate);
+  cubeCam.update();
 
-if (yThoughts.size === 0) seedSample();
+  // 更新念头位置
+  for (const t of yThoughts.values()) {
+    const group = meshesById.get(t.id);
+    if (group) updateThoughtMesh(group, t);
+  }
 
-function seedSample() {
-  const seed = [
-    { id: 't_seed_0', text: '想开始一个新项目', x: -180, y: -80 },
-    { id: 't_seed_1', text: '但不知道从哪开始', x: 80, y: -120 },
-    { id: 't_seed_2', text: '也许先做个原型', x: -40, y: 80 },
-    { id: 't_seed_3', text: '验证手感', x: 200, y: 60 },
-    { id: 't_seed_4', text: '克制的游戏化', x: -260, y: 120 },
-    { id: 't_seed_5', text: '照料念头田野', x: 120, y: 200 }
-  ];
-  transact(() => {
-    for (const s of seed) yThoughts.set(s.id, createThought(s.id, s.text, s.x, s.y));
-    yEdges.set('e_seed_0', createEdge('e_seed_0', 't_seed_0', 't_seed_1', RelationType.SEQUENCE));
-    yEdges.set('e_seed_1', createEdge('e_seed_1', 't_seed_1', 't_seed_2', RelationType.CAUSE));
-    yEdges.set('e_seed_2', createEdge('e_seed_2', 't_seed_2', 't_seed_3', RelationType.PARALLEL));
-    yEdges.set('e_seed_3', createEdge('e_seed_3', 't_seed_5', 't_seed_0', RelationType.CAUSE));
-  });
+  // 沉积层
+  sediment.update(Array.from(yThoughts.values()), meshesById);
+
+  renderer.render(scene, camera);
 }
 
-setTimeout(() => {
-  const hint = document.getElementById('hint');
-  if (hint) hint.classList.add('fade');
-}, 8000);
+animate();
+
+// ---- 首次加载种子数据 ----
+if (yThoughts.size === 0) {
+  const seed = [
+    { id: 's0', text: '想开始一个新项目', x: -180, y: 280, z: -50 },
+    { id: 's1', text: '但不知道从哪开始', x: 80, y: 220, z: -80 },
+    { id: 's2', text: '也许先做个原型', x: -40, y: 150, z: 60 },
+    { id: 's3', text: '验证手感', x: 200, y: 100, z: 20 },
+    { id: 's4', text: '克制的游戏化', x: -260, y: 50, z: 120 },
+    { id: 's5', text: '照料念头田野', x: 120, y: -40, z: 80 },
+    { id: 's6', text: '被遗忘的旧笔记', x: 300, y: -180, z: -100 },
+    { id: 's7', text: '深埋的恐惧', x: -100, y: -280, z: -60 }
+  ];
+  transact(() => {
+    for (const s of seed) yThoughts.set(s.id, createThought(s.id, s.text, s.x, s.y, s.z));
+    yEdges.set('e01', createEdge('e01', 's0', 's1', RelationType.SEQUENCE));
+    yEdges.set('e12', createEdge('e12', 's1', 's2', RelationType.CAUSE));
+    yEdges.set('e23', createEdge('e23', 's2', 's3', RelationType.PARALLEL));
+    yEdges.set('e45', createEdge('e45', 's4', 's5', RelationType.CAUSE));
+  });
+}

@@ -2,29 +2,33 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>念头空间 · Phase 0 分层原型</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+<title>念头空间 · 拓扑意识空间</title>
 <style>
-  :root { --bg-deep: #0a0d1c; --bg-panel: #141a33; --line: #2a3358; --crystal: #7fe0c9; --amber: #e8a865; --rose: #e87aa8; --ink: #e9e7f4; --ink-dim: #8b90ad; }
-  * { box-sizing: border-box; }
-  html, body { margin: 0; height: 100%; background: radial-gradient(ellipse at 20% 20%, #131a36 0%, transparent 55%), radial-gradient(ellipse at 80% 75%, #1a1440 0%, transparent 55%), var(--bg-deep); color: var(--ink); font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif; overflow: hidden; user-select: none; }
-  header { position: fixed; top: 0; left: 0; right: 0; z-index: 10; padding: 18px 28px 12px; display: flex; justify-content: space-between; align-items: center; background: linear-gradient(180deg, rgba(10,13,28,0.85) 0%, rgba(10,13,28,0) 100%); pointer-events: none; }
-  header h1 { margin: 0; font-family: "Songti SC", "STSong", serif; font-size: 20px; font-weight: 600; letter-spacing: 4px; pointer-events: auto; }
-  header h1 small { display: block; font-family: inherit; font-size: 11px; color: var(--ink-dim); letter-spacing: 2px; margin-top: 4px; font-weight: 400; }
-  .stats { font-size: 12px; color: var(--ink-dim); letter-spacing: 1px; pointer-events: auto; display: flex; gap: 18px; }
-  .stats b { color: var(--crystal); font-weight: 500; }
-  #stage { position: absolute; inset: 0; }
-  .hint { position: fixed; bottom: 78px; left: 50%; transform: translateX(-50%); z-index: 9; font-size: 11px; color: var(--ink-dim); letter-spacing: 2px; pointer-events: none; text-align: center; transition: opacity 0.6s; }
-  .hint.fade { opacity: 0; }
+  :root { --bg-deep: #080a14; --crystal: #7fe0c9; --amber: #e8a865; --rose: #e87aa8; --ink: #e9e7f4; --ink-dim: #8b90ad; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 100%; height: 100%; overflow: hidden; background: var(--bg-deep); color: var(--ink); font-family: "PingFang SC", "Microsoft YaHei", sans-serif; user-select: none; -webkit-user-select: none; touch-action: none; }
+  #stage { position: fixed; inset: 0; }
+  .top-bar { position: fixed; top: 16px; left: 50%; transform: translateX(-50%); z-index: 10; display: flex; gap: 12px; }
+  .top-bar span { font-size: 12px; color: var(--ink-dim); letter-spacing: 2px; }
+  .top-bar b { color: var(--crystal); font-weight: 500; }
+  .hint-bar { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 10; font-size: 11px; color: var(--ink-dim); letter-spacing: 2px; pointer-events: none; text-align: center; transition: opacity 0.6s; }
+  .hint-bar.fade { opacity: 0; }
 </style>
 </head>
 <body>
-  <header>
-    <h1>念头空间<small>PHASE 0 · 分层原型</small></h1>
-    <div class="stats"><span>念头 <b id="stat-thoughts">0</b></span><span>连接 <b id="stat-edges">0</b></span><span>FPS <b id="stat-fps">0</b></span></div>
-  </header>
   <div id="stage"></div>
-  <div class="hint" id="hint">单击空白投念头 · Shift+点击连念头 · 双击详情 · Ctrl+Z 撤销</div>
+  <div class="top-bar">
+    <span>念头 <b id="stat-nodes">0</b></span>
+    <span>连接 <b id="stat-edges">0</b></span>
+    <span>面 <b id="stat-face">正面</b></span>
+  </div>
+  <div class="hint-bar" id="hint">
+    滑动切换意识面 · 点击投念头 · 双击捞起 · Ctrl+Z 撤销
+  </div>
+  <script type="importmap">
+    { "imports": { "three": "./node_modules/three/build/three.module.js", "d3-force-3d": "./node_modules/d3-force-3d/dist/d3-force-3d.es.js", "convex-hull": "./node_modules/convex-hull/lib/ch.js" } }
+  </script>
   <script type="module" src="./src/main.js"></script>
 </body>
 </html>
