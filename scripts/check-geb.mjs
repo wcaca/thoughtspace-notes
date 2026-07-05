@@ -47,6 +47,20 @@ if (srcExists) {
   }
 }
 
+// SEVERE-001 扩展:scripts/ 下的 .js 也应有 L3 头部(check-geb.mjs 自己除外避免递归)
+const scriptsFiles = (await walk(join(ROOT, 'scripts'))).filter(
+  (f) => /\.(js|mjs)$/.test(f) && !/\.test\.|__tests__/.test(f) && !f.endsWith('check-geb.mjs')
+);
+for (const f of scriptsFiles) {
+  const head = (await readFile(f, 'utf8')).slice(0, 800);
+  const hasAll = ['[INPUT]:', '[OUTPUT]:', '[POS]:', '[PROTOCOL]:'].every((s) =>
+    head.includes(s)
+  );
+  if (!hasAll) {
+    violations.push({ severity: 'SEVERE-001', path: relative(ROOT, f), msg: 'scripts/ 下缺 L3 文件头部契约' });
+  }
+}
+
 // FATAL-004: src/ 子目录无 CLAUDE.md
 if (srcExists) {
   const subdirs = (await readdir(join(ROOT, 'src'), { withFileTypes: true }))
