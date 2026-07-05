@@ -1,0 +1,32 @@
+{
+  "name": "thoughtspace-notes",
+  "version": "0.0.0",
+  "description": "念头空间 - 笔记路线: 笔记→念头→结构→觉察 的空间化思维整理工具",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "npx serve .",
+    "test": "vitest run --passWithNoTests",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "check:arch": "node scripts/check-arch.mjs",
+    "check:geb": "node scripts/check-geb.mjs",
+    "check:all": "npm run check:arch && npm run check:geb && npm test",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "geb:bootstrap": "node scripts/bootstrap.mjs"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "^2.0.0",
+    "@eslint/js": "^9.0.0",
+    "dependency-cruiser": "^16.0.0",
+    "eslint": "^9.0.0",
+    "prettier": "^3.3.0",
+    "vitest": "^2.0.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
