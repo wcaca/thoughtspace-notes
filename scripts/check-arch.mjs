@@ -5,13 +5,13 @@
  * [POS]: scripts/ 下,被 npm run check:arch 调用
  * [PROTOCOL]: 变更时更新此头部,然后检查 ../CLAUDE.md
  */
-import { spawnSync } from 'node:child_process';
+import { execSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { dirname } from 'node:path';
+import { dirname, join } from 'node:path';
 
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
-const SRC = `${ROOT}/src`;
+const SRC = join(ROOT, 'src');
 
 // src/ 不存在或为空时,跳过实际检查,温和通过
 if (!existsSync(SRC)) {
@@ -20,9 +20,10 @@ if (!existsSync(SRC)) {
   process.exit(0);
 }
 
-const result = spawnSync(
-  process.platform === 'win32' ? 'npx.cmd' : 'npx',
-  ['depcruise', 'src', '--config', 'dependency-cruiser.config.mjs'],
-  { stdio: 'inherit', cwd: ROOT }
-);
-process.exit(result.status ?? 1);
+const depcruiseBin = join(ROOT, 'node_modules', '.bin', process.platform === 'win32' ? 'depcruise.cmd' : 'depcruise');
+try {
+  execSync(`"${depcruiseBin}" src --config dependency-cruiser.config.mjs`, { stdio: 'inherit', cwd: ROOT });
+  process.exit(0);
+} catch (e) {
+  process.exit(e.status || 1);
+}
