@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+# .git/hooks/pre-commit (本文件由 scripts/install-hooks.mjs 复制过去)
+# GEB pre-commit 钩子:每次 commit 前自动跑 npm run check:all
+# 失败即 reject commit(对应 L1 FATAL-001/002/004/005)
+set -e
+
+echo "→ GEB pre-commit: running check:all"
+
+STAGED=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(js|mjs|cjs|html|md)$' | tr '\n' ' ')
+
+if [ -z "$STAGED" ]; then
+  echo "  (no JS/MD staged, skipping check)"
+  exit 0
+fi
+
+NPM_CMD="npm"
+if [ "$(uname)" = "MINGW"* ] || [ "$OS" = "Windows_NT" ]; then
+  NPM_CMD="npm.cmd"
+fi
+
+echo "  staged: $STAGED"
+
+$NPM_CMD run check:arch || { echo "  ✗ FATAL: architecture rule violated (FATAL-005)"; exit 1; }
+$NPM_CMD run check:geb  || { echo "  ✗ FATAL: GEB protocol violated (FATAL-002/004)"; exit 1; }
+$NPM_CMD test --silent  || { echo "  ✗ FATAL: tests failed"; exit 1; }
+
+echo "  ✓ GEB pre-commit: all passed"
