@@ -53,8 +53,12 @@ export function createLayerStore() {
   }
 
   function add(spec = {}) {
-    const layer = makeLayer(spec, layerById.size);
+    // 如果用户没指定 order,自动分配 size() (这样 insertAt/reorder 后 add 不会撞号)
+    const targetOrder = (typeof spec.order === 'number') ? spec.order : layerById.size;
+    const layer = makeLayer(spec, targetOrder);
     layerById.set(layer.id, layer);
+    // 只在用户没显式指定 order 时 compact (避免破坏测试用 order=5,1,3 的场景)
+    if (typeof spec.order !== 'number') compactOrders();
     return { ...layer };
   }
 
@@ -90,15 +94,22 @@ export function createLayerStore() {
 
   function reorder(newOrder) {
     if (!Array.isArray(newOrder)) return false;
+    // 严格校验: 必须传全量 id, 顺序决定 order
+    if (newOrder.length !== layerById.size) return false;
     const seen = new Set();
     for (let i = 0; i < newOrder.length; i++) {
       const id = newOrder[i];
-      const layer = layerById.get(id);
-      if (!layer || seen.has(id)) return false;
+      if (typeof id !== 'string' || seen.has(id) || !layerById.has(id)) return false;
       seen.add(id);
-      layer.order = i;
+      layerById.get(id).order = i;
     }
     return true;
+  }
+
+  // 紧凑 order (消除跳号/重号), 内部使用
+  function compactOrders() {
+    const sorted = Array.from(layerById.values()).sort((a, b) => a.order - b.order);
+    for (let i = 0; i < sorted.length; i++) sorted[i].order = i;
   }
 
   function insertAt(order, spec = {}) {
@@ -146,7 +157,6 @@ export function createLayerStore() {
 
   return {
     add, update, remove, get, list, size, reorder, insertAt,
-    bootstrapDefaults, toJSON, fromJSON, dispose,
-    _map: layerById
+    bootstrapDefaults, toJSON, fromJSON, dispose
   };
 }

@@ -75,7 +75,7 @@
 | `2026-07-05-topological-awareness-space-design.md` | 🔵 沉淀 | 2026-07-05 | src/topology/* + 3D 主空间 | 3D 不规则多面体,已被实现但 SP-3 会进一步扩展 |
 | `2026-07-05-trae-mcp-and-project-rules-bootstrap-design.md` | 🟢 底座 | 2026-07-05 | .trae/rules/project_rules.md | TRAE 规则引导,稳定 |
 | `2026-07-06-shape-adaptive-views-design.md` | 🟡 焦点 | 2026-07-06 | src/core/shape-resolver.js + shape-indicator.js | 形状哲学,正在实验和修订（T10 语义反转后） |
-| `2026-07-07-kanban-layered-space-design.md` | 🟡 焦点 | 2026-07-07 | src/core/layer-store.js + sort-axis.js + canvas-mode.js + src/main.js + observe-views.js | SP-1 全部完成(T0 数据层 + T1 装配 + T2 UI + T3 测试),506 测试全过 |
+| `2026-07-07-kanban-layered-space-design.md` | 🔵 沉淀 | 2026-07-07 | src/core/layer-store.js + sort-axis.js + canvas-mode.js + src/main.js + observe-views.js | SP-1 全部完成(T0 数据层 + T1 装配 + T2 UI + T3 测试),506 测试全过 |
 
 ### 2.2 当前 plan 清单与状态
 
@@ -146,6 +146,7 @@
 |---|---|---|---|
 | `check-arch.mjs` | 🟢 底座 | 架构守卫 | GEB 工具 |
 | `check-geb.mjs` | 🟢 底座 | GEB 守卫 | GEB 工具 |
+| `check-note-links.mjs` | 🟡 焦点 | **注释时间拓扑门禁** | @note 格式 + 双向验证 + 生成 .notes-link-graph.json |
 | `bootstrap.mjs` | 🟢 底座 | 引导脚本 | GEB 工具 |
 | `install-hooks.mjs` | 🟢 底座 | 安装 git hooks | GEB 工具 |
 | `sync-mcp-config.mjs` | 🟢 底座 | 同步 MCP 配置 | GEB 工具 |

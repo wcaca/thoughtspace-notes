@@ -41,7 +41,18 @@ cp -r docs/methodology/ /path/to/new-project/docs/
 # 4. 按本项目的 spec → plan → implement 流程
 ```
 
-### 2.2 给"AI Agent"复用
+### 2.2 ⚠️ 复用时一定要做的事
+
+**`01` `02` `03` `04` `05` `06` 的"我们的实践" / "参见 / 引用"段是项目实例**:
+- 迁移到新项目时**全部删除**
+- 只保留 §1-§4 的方法本身
+
+**`07-sp1-case-study.md` 是完整案例**:
+- 这是 thoughtspace-notes 的特化案例,**不属于方法论本身**
+- 跨项目时**不要拷贝**(或移到 `docs/methodology/examples/` 子目录)
+- 真正可复用的是方法 01-06
+
+### 2.3 给"AI Agent"复用
 
 把 `docs/methodology/` 加入 Agent 的 system prompt 读取清单:
 
@@ -53,7 +64,7 @@ cp -r docs/methodology/ /path/to/new-project/docs/
 4. 当前任务相关 spec
 ```
 
-### 2.3 给"团队新人"复用
+### 2.4 给"团队新人"复用
 
 新人入职第一天:
 1. 读 [01-design-thinking.md](01-design-thinking.md) — 理解"为什么这么做"

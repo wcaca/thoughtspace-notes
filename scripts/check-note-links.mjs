@@ -22,8 +22,9 @@
 
 import { readFileSync, existsSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { join, relative, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const ROOT = process.cwd();
+const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 const SRC_DIR = join(ROOT, 'src');
 const NOTES_DIR = join(ROOT, 'docs/notes');
 const GRAPH_PATH = join(ROOT, '.notes-link-graph.json');
@@ -42,6 +43,7 @@ const links = []; // { file, line, subProject, type, anchor, since }
 
 function walk(dir, files = []) {
   for (const e of readdirSync(dir)) {
+    if (e === 'node_modules' || e === '.git' || e === 'coverage' || e === 'dist') continue;
     const p = join(dir, e);
     const s = statSync(p);
     if (s.isDirectory()) walk(p, files);
@@ -50,13 +52,17 @@ function walk(dir, files = []) {
   return files;
 }
 
+function posix(p) {
+  return p.split(join.sep).join('/');
+}
+
 function extractAnchors(mdPath) {
   if (!existsSync(mdPath)) return new Set();
   const text = readFileSync(mdPath, 'utf8');
   const anchors = new Set();
   // 匹配 ## anchor-name (锚点)
-  // 字符类: 字母/数字/点/连字符/下划线/井号/中文
-  const re = /^#{1,6}\s+([A-Za-z0-9.\-_#\u4e00-\u9fa5]+)/gm;
+  // Unicode 属性类: \p{L} 任意语言字母, \p{N} 任意数字, \p{M} 组合标记
+  const re = new RegExp('^#{1,6}\\s+([\\p{L}\\p{N}\\p{M}.\\-_#]+)', 'gmu');
   let m;
   while ((m = re.exec(text)) !== null) anchors.add(m[1]);
   return anchors;
@@ -94,7 +100,7 @@ function scanFiles() {
           continue;
         }
         links.push({
-          file: relative(ROOT, file),
+          file: posix(relative(ROOT, file)),
           line: i + 1,
           ...parsed
         });
@@ -150,7 +156,7 @@ function validateLinks() {
       errors.push({
         file: link.file,
         line: link.line,
-        msg: `@note: 锚点 "${link.anchor}" 不存在于 ${relative(ROOT, noteFile)}`
+        msg: `@note: 锚点 "${link.anchor}" 不存在于 ${posix(relative(ROOT, noteFile))}`
       });
     }
   }
@@ -233,8 +239,12 @@ function main() {
   const graph = buildGraph();
   printReport(graph);
 
-  // 写拓扑图(给 README/拓扑表 引用)
-  writeFileSync(GRAPH_PATH, JSON.stringify(graph, null, 2));
+  // 只在门禁通过时写拓扑图(失败时不写,避免污染仓库历史)
+  if (errors.length === 0) {
+    writeFileSync(GRAPH_PATH, JSON.stringify(graph, null, 2));
+  } else {
+    console.log('  (skip .notes-link-graph.json 写入:门禁失败)');
+  }
 
   if (errors.length > 0) {
     console.log(`\n✗ 门禁失败:${errors.length} 个错误`);

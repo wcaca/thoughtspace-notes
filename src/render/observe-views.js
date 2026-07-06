@@ -19,6 +19,20 @@ const MODE_LABELS = {
 export function showObserveView(mode, thoughts, callbacks = {}) {
   const list = Array.from(thoughts || []);
 
+  // SP-1 接通: callbacks.onReorder 未提供时,自动兜底到 window.__sp1State.recordManualOrder
+  // ⚠️ 此兜底是关键 — 没有它,信念轨迹不会累积
+  //   详见 [docs/notes/sp1/pitfalls.md#T1.4-recordOrder-side-effect]
+  // @note(sp1, pitfall, T1.4-recordOrder-side-effect, since:2026-07-07)
+  function fireReorder(newOrder, opts = {}) {
+    if (callbacks.onReorder) {
+      callbacks.onReorder(newOrder, opts);
+      return;
+    }
+    if (typeof window !== 'undefined' && window.__sp1State?.recordManualOrder) {
+      window.__sp1State.recordManualOrder(newOrder);
+    }
+  }
+
   const root = document.createElement('div');
   root.id = 'observe-overlay';
 
@@ -535,7 +549,7 @@ function setupDragReorder(container, orderedIds, callbacks) {
     targetCard.classList.remove('ob-drop-target');
 
     const newOrder = getCards().map((c) => c.dataset.thoughtId);
-    if (callbacks.onReorder) callbacks.onReorder(newOrder);
+    fireReorder(newOrder);
   }
 
   container.addEventListener('dragover', onDragOver);
@@ -606,7 +620,7 @@ function renderKanban(container, list, callbacks) {
       if (target.parentNode === colEl) return;
       colEl.appendChild(target);
       const newOrder = Array.from(container.querySelectorAll('.ob-card[data-thought-id]')).map((c) => c.dataset.thoughtId);
-      if (callbacks.onReorder) callbacks.onReorder(newOrder, { fromKanban: true, colKey: col.key, thoughtId: droppedId });
+      fireReorder(newOrder, { fromKanban: true, colKey: col.key, thoughtId: droppedId });
     });
     wrap.appendChild(colEl);
   }
@@ -721,7 +735,7 @@ function renderTimeline(container, list, callbacks) {
       else tl.insertBefore(dragged, target.nextSibling);
     }
     const newOrder = Array.from(tl.querySelectorAll('.ob-card[data-thought-id]')).map((c) => c.dataset.thoughtId);
-    if (callbacks.onReorder) callbacks.onReorder(newOrder);
+    fireReorder(newOrder);
   });
 }
 

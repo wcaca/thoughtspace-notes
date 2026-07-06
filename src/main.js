@@ -210,6 +210,7 @@ window.__sp1State = {
   getLayers: () => currentLayerStore.list(),
   getCurrentAxis: () => currentSortHistory.getCurrentAxis(),
   getManualOrder: () => currentSortHistory.getManualOrder(),
+  getCurrentOrder: (thoughts) => currentSortHistory.getCurrentOrder(thoughts),
   getCanvasMode: () => currentCanvasMode.getMode(),
   setCanvasMode: (m) => currentCanvasMode.setMode(m),
   setCurrentAxis: (a) => currentSortHistory.setCurrentAxis(a),

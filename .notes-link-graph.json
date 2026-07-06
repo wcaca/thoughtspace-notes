@@ -1,0 +1,160 @@
+{
+  "generatedAt": "2026-07-06T19:56:07.572Z",
+  "stats": {
+    "totalLinks": 10,
+    "uniqueAnchors": 9,
+    "filesWithNotes": 4,
+    "errors": 0,
+    "warnings": 0
+  },
+  "forward": {
+    "src\\core\\layer-store.js": [
+      {
+        "subProject": "sp1",
+        "type": "pitfall",
+        "anchor": "T1.5-json-undefined-side-effect",
+        "line": 143,
+        "since": "2026-07-07"
+      }
+    ],
+    "src\\core\\sort-axis.js": [
+      {
+        "subProject": "sp1",
+        "type": "pitfall",
+        "anchor": "T1.4-recordOrder-side-effect",
+        "line": 148,
+        "since": "2026-07-07"
+      },
+      {
+        "subProject": "sp1",
+        "type": "decision",
+        "anchor": "why-sort-axis-default-time",
+        "line": 150,
+        "since": "2026-07-07"
+      }
+    ],
+    "src\\main.js": [
+      {
+        "subProject": "sp1",
+        "type": "pitfall",
+        "anchor": "T1.4-no-bootstrap",
+        "line": 29,
+        "since": "2026-07-07"
+      },
+      {
+        "subProject": "sp1",
+        "type": "decision",
+        "anchor": "why-window-globals",
+        "line": 32,
+        "since": "2026-07-07"
+      }
+    ],
+    "src\\render\\observe-views.js": [
+      {
+        "subProject": "sp1",
+        "type": "pitfall",
+        "anchor": "T1.4-recordOrder-side-effect",
+        "line": 25,
+        "since": "2026-07-07"
+      },
+      {
+        "subProject": "sp1",
+        "type": "integration",
+        "anchor": "observe-views",
+        "line": 74,
+        "since": "2026-07-07"
+      },
+      {
+        "subProject": "sp1",
+        "type": "decision",
+        "anchor": "why-canvas-mode-orthogonal-to-observe-mode",
+        "line": 76,
+        "since": "2026-07-07"
+      },
+      {
+        "subProject": "sp1",
+        "type": "pitfall",
+        "anchor": "T2.1-ob-content-not-yet-attached",
+        "line": 139,
+        "since": "2026-07-07"
+      },
+      {
+        "subProject": "sp1",
+        "type": "decision",
+        "anchor": "why-no-layer-in-background-mode-yet",
+        "line": 362,
+        "since": "2026-07-07"
+      }
+    ]
+  },
+  "reverse": {
+    "sp1:pitfall:T1.5-json-undefined-side-effect": [
+      {
+        "file": "src\\core\\layer-store.js",
+        "line": 143,
+        "since": "2026-07-07"
+      }
+    ],
+    "sp1:pitfall:T1.4-recordOrder-side-effect": [
+      {
+        "file": "src\\core\\sort-axis.js",
+        "line": 148,
+        "since": "2026-07-07"
+      },
+      {
+        "file": "src\\render\\observe-views.js",
+        "line": 25,
+        "since": "2026-07-07"
+      }
+    ],
+    "sp1:decision:why-sort-axis-default-time": [
+      {
+        "file": "src\\core\\sort-axis.js",
+        "line": 150,
+        "since": "2026-07-07"
+      }
+    ],
+    "sp1:pitfall:T1.4-no-bootstrap": [
+      {
+        "file": "src\\main.js",
+        "line": 29,
+        "since": "2026-07-07"
+      }
+    ],
+    "sp1:decision:why-window-globals": [
+      {
+        "file": "src\\main.js",
+        "line": 32,
+        "since": "2026-07-07"
+      }
+    ],
+    "sp1:integration:observe-views": [
+      {
+        "file": "src\\render\\observe-views.js",
+        "line": 74,
+        "since": "2026-07-07"
+      }
+    ],
+    "sp1:decision:why-canvas-mode-orthogonal-to-observe-mode": [
+      {
+        "file": "src\\render\\observe-views.js",
+        "line": 76,
+        "since": "2026-07-07"
+      }
+    ],
+    "sp1:pitfall:T2.1-ob-content-not-yet-attached": [
+      {
+        "file": "src\\render\\observe-views.js",
+        "line": 139,
+        "since": "2026-07-07"
+      }
+    ],
+    "sp1:decision:why-no-layer-in-background-mode-yet": [
+      {
+        "file": "src\\render\\observe-views.js",
+        "line": 362,
+        "since": "2026-07-07"
+      }
+    ]
+  }
+}

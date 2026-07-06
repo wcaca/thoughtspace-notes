@@ -30,9 +30,11 @@
 
 ## why-bootstrap-6-layers
 
-**决策**: 默认 6 层 (3 conscious + 3 subconscious)  
-**时间**: 2026-07-07  
-**原因**: 用户的原始示例 ("显意识 3 层 + 潜意识 3 层")  
+**决策**: 默认 6 层 (3 conscious + 3 subconscious)
+**时间**: 2026-07-07
+**原因**: 用户的原始示例 ("显意识 3 层 + 潜意识 3 层")
+**代价**: 用户初次接触会看到 6 层,可能感觉多;若只需要 3 层,需要手动 remove
+**缓解**: 提供 `bootstrapLayerDefaults()` 重置 + `add / remove` 任意调整
 **可覆盖**: 用户可调 `add` / `remove` 完全自定义层数
 
 **为什么不是 4 层**: 已有 spec 拓扑意识空间定义 Y 轴 4 层(L0-L3),但那是 **3D 空间的 Y 轴**,与 SP-1 的**用户自定义意识层级**语义不同。
@@ -45,9 +47,11 @@ SP-3 时再做映射。
 
 ## why-sort-axis-default-time
 
-**决策**: 默认排序轴是 `time`  
-**时间**: 2026-07-07  
+**决策**: 默认排序轴是 `time`
+**时间**: 2026-07-07
 **原因**: 用户原话 "如果有一种固定的排序方式进行规定性,可能会让这种**信念信息被压制**"
+**代价**: 用户看到的是"时间顺序",可能感觉无序;若想看热度需要手动切
+**缓解**: 顶部 [召唤手势](integration-points.md) 可随时展开排序轴条切换
 
 **评估**:
 - 默认按 time → 反映"念头出现顺序",最弱信号,最不压制
@@ -88,20 +92,19 @@ SP-3 时再做映射。
 2. 长按阈值因设备而异(600ms 是经验值,需真实体验)
 3. 单击作为基础入口已足够
 
-**未来**: 在真实浏览器测后,补 mousedown/touchstart + setTimeout + clearTimeout
-
----
-
 ## why-canvas-mode-orthogonal-to-observe-mode
 
-**决策**: canvas-mode (background/block) 与 observe-mode (cards/kanban/timeline) 正交,任意组合  
-**时间**: 2026-07-07  
+**决策**: canvas-mode (background/block) 与 observe-mode (cards/kanban/timeline) 正交,任意组合
+**时间**: 2026-07-07
 **原因**: 这是用户的核心需求
 
 > "等于一个视图可以切换为两种模式"
 
-不是 6 个模式(cards×background, cards×block, kanban×background, ...)  
+不是 6 个模式(cards×background, cards×block, kanban×background, ...)
 而是 3 + 2 = 5 种有意义组合(去重重复)
+
+**代价**: 实现复杂度高(2 × 3 = 6 种渲染路径,部分组合简化)
+**缓解**: SP-1 实际只用 5 种(canvas-mode=block 时忽略 observe-mode)
 
 **简化**: SP-1 实现时,canvas-mode=block 时**忽略** observe-mode,统一按当前排序轴渲染。
 
