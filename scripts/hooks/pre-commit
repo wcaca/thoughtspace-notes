@@ -22,6 +22,7 @@ echo "  staged: $STAGED"
 
 $NPM_CMD run check:arch || { echo "  ✗ FATAL: architecture rule violated (FATAL-005)"; exit 1; }
 $NPM_CMD run check:geb  || { echo "  ✗ FATAL: GEB protocol violated (FATAL-002/004)"; exit 1; }
+$NPM_CMD run check:notes || { echo "  ✗ FATAL: @note 注释链接断裂或锚点不存在"; exit 1; }
 $NPM_CMD test --silent  || { echo "  ✗ FATAL: tests failed"; exit 1; }
 
 echo "  ✓ GEB pre-commit: all passed"

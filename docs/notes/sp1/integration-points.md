@@ -17,6 +17,8 @@
 
 ### 1.2 observe-views.js ← → SP-1
 
+## observe-views
+
 | observe-views 接触点 | SP-1 函数 | 风险 |
 |---|---|---|
 | `buildCanvasTabs()` | canvas-mode.getMode / setMode | 低 |

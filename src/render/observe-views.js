@@ -57,8 +57,9 @@ export function showObserveView(mode, thoughts, callbacks = {}) {
   // 与 observe-mode (cards/kanban/timeline) 正交,通过 window.__sp1State 接入
   // 🔗 接触点: 此函数被 main.js 的 window.__sp1State 间接调用
   //   详见 [docs/notes/sp1/integration-points.md#observe-views]
+  // @note(sp1, integration, observe-views, since:2026-07-07)
   // 📋 决策: 为什么 canvas-mode 与 observe-mode 正交?
-  //   详见 [docs/notes/sp1/decisions.md#why-canvas-mode-orthogonal-to-observe-mode]
+  // @note(sp1, decision, why-canvas-mode-orthogonal-to-observe-mode, since:2026-07-07)
   let sp1Host = null;
   try {
     if (typeof window !== 'undefined' && window.__sp1State) {
@@ -121,6 +122,7 @@ export function showObserveView(mode, thoughts, callbacks = {}) {
   // SP-1: 默认 background/block 模式覆盖原 observe-mode 渲染
   // ⚠️ 易错: 必须在 root.appendChild(content) 之后,否则 content=null
   //   详见 [docs/notes/sp1/pitfalls.md#T2.1-ob-content-not-yet-attached]
+  // @note(sp1, pitfall, T2.1-ob-content-not-yet-attached, since:2026-07-07)
   if (sp1Host) {
     const initialMode = sp1Host.getCanvasMode();
     if (initialMode === 'background') {
@@ -343,7 +345,7 @@ function renderBlockMode(container, list, sp1, callbacks) {
 // SP-1: 背景模式渲染(层 × 块)
 // 当前用温度分桶作为 SP-1 简化版;后续可扩展为基于 layer-store 的真分层
 // 📋 决策: 为什么用温度分桶而非真分层?
-//   详见 [docs/notes/sp1/decisions.md#why-no-layer-in-background-mode-yet]
+// @note(sp1, decision, why-no-layer-in-background-mode-yet, since:2026-07-07)
 function renderBackgroundMode(container, list, sp1, callbacks) {
   const layers = sp1.getLayers ? sp1.getLayers() : [];
   const buckets = [

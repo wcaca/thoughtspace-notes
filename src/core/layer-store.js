@@ -129,6 +129,7 @@ export function createLayerStore() {
   function fromJSON(arr) {
   // ⚠️ 易错: 必须先检查再 clear,否则 fromJSON(undefined) 会破坏现有数据
   //   详见 [docs/notes/sp1/pitfalls.md#T1.5-json-undefined-side-effect]
+  // @note(sp1, pitfall, T1.5-json-undefined-side-effect, since:2026-07-07)
   if (!Array.isArray(arr)) return;
   layerById.clear();
   for (let i = 0; i < arr.length; i++) {
