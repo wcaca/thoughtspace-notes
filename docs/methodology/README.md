@@ -25,6 +25,7 @@
 | **05** | [系统性调试](05-debug-systematic.md) | 4 阶段失败要重审架构;trace data flow 找到 activeOverlay 时序错位 | [详细](05-debug-systematic.md) |
 | **06** | [架构守卫](06-arch-guard.md) | dependency-cruiser 守住分层;CI 跑零越层 | [详细](06-arch-guard.md) |
 | **07** | [SP-1 案例研究](07-sp1-case-study.md) | 我们怎么把方法 01-06 一起用到 SP-1 | [详细](07-sp1-case-study.md) |
+| **08** | [跨视角并行审查](08-cross-review.md) | SP 收尾前派 ≥3 视角 agent,找 P0/P1/P2 + 亮点;独立打破"完成感幻觉" | [详细](08-cross-review.md) |
 
 ---
 
@@ -89,15 +90,21 @@ cp -r docs/methodology/ /path/to/new-project/docs/
   ↓ 输入: 测试失败
 06 架构守卫 (CI)
   ↓ 输入: 代码提交
+08 跨视角审查 (SP 收尾) ← 新
+  ↓ 输入: 实现完成的 SP
 07 案例 (SP-1)
-  ↑ 综合展示 01-06
+  ↑ 综合展示 01-06 + 08
 ```
 
 **核心循环**:
 ```
 新需求 → 01 设计思维 → 02 写 spec → 03 登记到拓扑表 → 实施 → 06 架构守卫
   ↑                                                                   ↓
-  └─────────────────────── 05 失败时调试 ←─── 04 找到相关笔记 ────────┘
+  ↑                                                          ┌── 08 跨视角审查 (SP 收尾前 ⚠️)
+  ↑                                                          ↓        ↓
+  └─────────────── 05 失败时调试 ←─── 04 找到相关笔记 ────┘   修 P0
+                                                              ↓
+                                                        SP 转 🔵 沉淀
 ```
 
 ---
@@ -138,6 +145,7 @@ cp -r docs/methodology/ /path/to/new-project/docs/
 | 日期 | 变更 | 备注 |
 |---|---|---|
 | 2026-07-07 | 初始创建 7 个方法 | SP-1 实践沉淀 |
+| 2026-07-07 | 加方法 08 跨视角审查 | agent team 强项制度化;CLAUDE.md SP 收尾阈值引用 08 |
 
 ---
 

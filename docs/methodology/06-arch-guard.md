@@ -98,7 +98,26 @@ npx vitest run --reporter=basic
 
 - [scripts/check-arch.mjs](../scripts/check-arch.mjs) — 架构守卫
 - [scripts/check-geb.mjs](../scripts/check-geb.mjs) — GEB 守卫
+- [scripts/check-note-links.mjs](../scripts/check-note-links.mjs) — 注释时间拓扑门禁
 - [dependency-cruiser.config.mjs](../dependency-cruiser.config.mjs) — 配置
+
+## §9 SP 收尾前的人工触发:跨视角审查
+
+⚠️ **门禁脚本不能替代审查** — 它检查**合规**,跨视角审查(08)检查**设计 / 完整性 / 可发现性**。
+
+任何 sub-project 准备从 🟡焦点 转 🔵沉淀 **前**,触发 [08 跨视角并行审查](08-cross-review.md):
+- 派 ≥3 个独立视角 agent
+- 收到报告后诚实分级(P0/P1/P2 + 亮点)
+- 存档到 `docs/audit/<date>-<sp>-quality-review.md`
+
+**关系**:
+```
+06 架构守卫(自动) → 测试 + 门禁 全过
+        ↓
+08 跨视角审查(人工触发) → 找 P0/P1/P2 + 亮点
+        ↓
+SP 转 🔵 沉淀
+```
 
 ---
 

@@ -165,6 +165,18 @@ Fable5 自主推进 task 循环(每个 task 一轮,放在 plans/ 下):
 - Step 5:`git commit -m "feat|fix|chore|test(scope): message"`,commit message 必须引用 task id + spec id
 - Step 6:更新 docs/superpowers/backlog.md,从 in-progress 移到 done
 - Step 7:自动取下一个 task;无 task 时停在 Phase checkpoint 等用户
+
+SUB-PROJECT 收尾阈值(强制):
+任何 sub-project 状态在 [topology-priority.md](docs/topology-priority.md) 准备从 🟡焦点 → 🔵沉淀 之前,**必须**:
+
+1. `npm run check:all` 全过(arch + geb + notes + tests)
+2. **≥3 视角并行 agent team 审查** — 详见 [docs/methodology/08-cross-review.md](docs/methodology/08-cross-review.md)
+3. **审查报告存档** — 路径 `docs/audit/<date>-<sp>-quality-review.md`
+4. P0 问题当前会话**修完** — 不能"留待下次"
+5. P1 问题记录到 backlog,可 push,但要已知
+6. 第 8 步方法里"亮点"必须明示在 audit 报告中,避免下次重构误删
+
+**该阈值不可跳过** — 跳过 = 未来自己踩同样的"完成感幻觉"。
 </WORKFLOW>
 
 <FORBIDDEN>

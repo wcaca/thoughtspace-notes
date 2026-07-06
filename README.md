@@ -55,6 +55,7 @@ npm install    # ⚠️ 自动装 pre-commit hook(GEB 门禁生效)
 - [05 系统性调试](docs/methodology/05-debug-systematic.md) — trace data flow
 - [06 架构守卫](docs/methodology/06-arch-guard.md) — CI 守住分层
 - [07 SP-1 案例](docs/methodology/07-sp1-case-study.md) — 方法怎么一起用
+- [08 跨视角并行审查](docs/methodology/08-cross-review.md) — agent team 强项;SP 收尾阈值
 
 ### 仓库治理
 - 架构守卫:`npm run check:arch`(dependency-cruiser)

@@ -175,7 +175,9 @@
 | `/docs/methodology/04-on-demand-notes.md` | 🟢 底座 | 按需加载笔记 | 4 类笔记 + 注释约定 |
 | `/docs/methodology/05-debug-systematic.md` | 🟢 底座 | 系统性调试 | trace data flow |
 | `/docs/methodology/06-arch-guard.md` | 🟢 底座 | 架构守卫 | CI + 测试金字塔 |
-| `/docs/methodology/07-sp1-case-study.md` | 🟢 底座 | SP-1 案例 | 方法怎么一起用 |
+| `/docs/methodology/07-sp1-case-study.md` | 🟡 焦点 | SP-1 案例 | 方法怎么一起用(项目特化) |
+| `/docs/methodology/08-cross-review.md` | 🟢 底座 | **跨视角并行审查** | agent team 强项制度化;SP 收尾阈值引用 |
+| `/docs/audit/2026-07-07-sp1-quality-review.md` | 🔵 沉淀 | SP-1 审查报告存档 | 08 方法的首次实践 |
 
 ---
 
