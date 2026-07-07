@@ -68,6 +68,8 @@ function rebuildSim() {
   simState = createSim3D(thoughts, edges);
   simState.sim.on('tick', () => {
     if (simState?.sim?.alpha() < 0.02) return;
+    // P0-1 (TAS audit 1.1): sim tick 写回 Yjs 用 origin='sim'
+    // observeDeep 回调检查 origin==='sim' 时 return,避免无限循环
     transact(() => {
       for (const n of simState.nodes) {
         const t = yThoughts.get(n.id);
@@ -103,15 +105,85 @@ function rebuildScene() {
   rebuildSim();
 }
 
-yThoughts.observeDeep(() => requestAnimationFrame(rebuildScene));
-yEdges.observeDeep(() => requestAnimationFrame(rebuildScene));
+// P0-1 (TAS audit 1.1): observeDeep 检查 origin==='sim' 短路,避免无限循环
+yThoughts.observeDeep((events) => {
+  if (events.length > 0 && events[0].transaction?.origin === 'sim') return;
+  requestAnimationFrame(rebuildScene);
+});
+yEdges.observeDeep((events) => {
+  if (events.length > 0 && events[0].transaction?.origin === 'sim') return;
+  requestAnimationFrame(rebuildScene);
+});
 yZones.observeDeep(() => {
   currentZoneBridge.syncToStore();
   requestAnimationFrame(() => zoneMesh.rebuild());
 });
 
+// P0-3 (TAS audit 1.3): 拖拽念头核心交互
+// spec §4.2 要求"拖拽念头:在空间内移动位置(力导向暂时 override)"
+let draggingId = null;
+let suppressNextClick = false; // P0-3: 拖拽刚结束抑制下一次 click
+const dragPlane = new THREE.Plane();
+const dragIntersect = new THREE.Vector3();
+
+renderer.domElement.addEventListener('pointerdown', (e) => {
+  if (e.button !== 0) return; // 仅左键
+  if (cubeCam.isSwiping && cubeCam.isSwiping()) return; // P1-2: swipe 进行中不触发 drag
+  const rect = renderer.domElement.getBoundingClientRect();
+  mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+  mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+  raycaster.setFromCamera(mouse, camera);
+  const intersects = raycaster.intersectObjects(Array.from(meshesById.values()), true);
+  if (intersects.length === 0) return;
+  // 沿父链找 thoughtId
+  let obj = intersects[0].object;
+  while (obj && !obj.userData?.thoughtId) obj = obj.parent;
+  if (!obj?.userData?.thoughtId) return;
+  draggingId = obj.userData.thoughtId;
+  suppressNextClick = true; // 命中念头后,抑制后续 click (避免误投)
+  // 钉住 sim 节点
+  if (simState?.idToNode?.has(draggingId)) {
+    const n = simState.idToNode.get(draggingId);
+    n.fx = n.x; n.fy = n.y; n.fz = n.z;
+  }
+  // 设置拖拽平面 (垂直于相机方向,过节点位置)
+  const camDir = new THREE.Vector3();
+  camera.getWorldDirection(camDir);
+  const nodePos = new THREE.Vector3(intersects[0].point.x, intersects[0].point.y, intersects[0].point.z);
+  dragPlane.setFromNormalAndCoplanarPoint(camDir, nodePos);
+});
+
+renderer.domElement.addEventListener('pointermove', (e) => {
+  if (!draggingId) return;
+  const rect = renderer.domElement.getBoundingClientRect();
+  mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+  mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+  raycaster.setFromCamera(mouse, camera);
+  if (raycaster.ray.intersectPlane(dragPlane, dragIntersect)) {
+    if (simState?.idToNode?.has(draggingId)) {
+      const n = simState.idToNode.get(draggingId);
+      n.fx = dragIntersect.x;
+      n.fy = dragIntersect.y;
+      n.fz = dragIntersect.z;
+    }
+  }
+});
+
+renderer.domElement.addEventListener('pointerup', () => {
+  if (draggingId && simState?.idToNode?.has(draggingId)) {
+    const n = simState.idToNode.get(draggingId);
+    // 释放钉住 (念头停留在新位置)
+    n.fx = null; n.fy = null; n.fz = null;
+  }
+  draggingId = null;
+});
+
 // ---- 交互: 点击空白投念头 ----
 renderer.domElement.addEventListener('click', (e) => {
+  // P1-2 (TAS audit 2.7): swipe 进行中不触发 click
+  if (cubeCam.isSwiping && cubeCam.isSwiping()) return;
+  // P0-3: 拖拽刚结束不触发 click (避免误投念头)
+  if (suppressNextClick) { suppressNextClick = false; return; }
   const rect = renderer.domElement.getBoundingClientRect();
   mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
   mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;

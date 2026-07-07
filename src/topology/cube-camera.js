@@ -29,10 +29,15 @@ export function createCubeCamera(camera, domElement) {
   camera.position.set(...FACES.front.pos);
   camera.lookAt(...FACES.front.lookAt);
 
+  // P1-3 (TAS audit 2.8): desktop 用户可切面 — 接受 mouse + touch
+  // 原: 仅 touch 触发 swipe,desktop 无法切面
+  let lastSwipeTime = 0; // P1-2: 记录最近 swipe 结束时间,供 isSwiping() 判断
+
   domElement.addEventListener('pointerdown', (e) => {
     swipeStart = { x: e.clientX, y: e.clientY, time: Date.now() };
 
-    if (e.pointerType === 'touch' && e.isPrimary) {
+    // P1-3: 接受 mouse + touch,desktop 也能切面
+    if ((e.pointerType === 'touch' || e.pointerType === 'mouse') && e.isPrimary) {
       swiping = true;
     }
   });
@@ -44,6 +49,7 @@ export function createCubeCamera(camera, domElement) {
   domElement.addEventListener('pointerup', (e) => {
     if (!swiping) return;
     swiping = false;
+    lastSwipeTime = Date.now(); // P1-2: 记录 swipe 结束时间
 
     const dx = e.clientX - swipeStart.x;
     const dy = e.clientY - swipeStart.y;
@@ -71,11 +77,20 @@ export function createCubeCamera(camera, domElement) {
   domElement.addEventListener('wheel', (e) => {
     e.preventDefault();
     const zoom = e.deltaY > 0 ? 1.1 : 0.9;
+    // P0-2 (TAS audit 1.4): 同步 targetPos,避免被 update() lerp 抵消
+    // 原: 仅改 camera.position,下一帧 lerp 拉回 targetPos,缩放在 0.4s 内被抵消
     camera.position.multiplyScalar(zoom);
+    targetPos.copy(camera.position); // 锁定 targetPos 为当前缩放后位置
 
     const dist = camera.position.length();
-    if (dist < 200) camera.position.normalize().multiplyScalar(200);
-    if (dist > 2000) camera.position.normalize().multiplyScalar(2000);
+    if (dist < 200) {
+      camera.position.normalize().multiplyScalar(200);
+      targetPos.copy(camera.position);
+    }
+    if (dist > 2000) {
+      camera.position.normalize().multiplyScalar(2000);
+      targetPos.copy(camera.position);
+    }
   }, { passive: false });
 
   domElement.addEventListener('touchstart', (e) => {
@@ -132,6 +147,14 @@ export function createCubeCamera(camera, domElement) {
       const dir = new THREE.Vector3(0, 0, -1);
       dir.applyQuaternion(camera.quaternion);
       return dir.normalize();
+    },
+
+    // P1-2 (TAS audit 2.7): 暴露 swipe 状态供 main.js click 短路
+    // swipe 进行中 或 swipe 结束后 300ms 内返回 true (避免 click 误投)
+    isSwiping() {
+      if (swiping) return true;
+      if (Date.now() - lastSwipeTime < 300) return true;
+      return false;
     }
   };
 }

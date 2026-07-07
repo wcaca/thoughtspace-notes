@@ -69,12 +69,17 @@ export function createSim3D(thoughts, edges, options = {}) {
     .alphaDecay(opts.alphaDecay);
 
   // P0-3: 温度→Y 拉拽 (spec non-negotiable + TSIM-002 decision)
+  // P1-5 (TAS audit 2.2): 沉积漂移 sink force — spec §4.4 "温度<0.3 的念头向 Y 轴负方向缓慢漂移(2px/帧)"
   sim.on('tick', () => {
     for (const n of nodes) {
       const tempClamped = Math.max(0, Math.min(1, n.temperature ?? 0));
       const targetY = yBottom + (yTop - yBottom) * tempClamped;
       // 施加拉拽力: 朝目标 Y 移动
       n.vy += (targetY - n.y) * pullCoef;
+      // P1-5: 低温念头(< 0.3)额外下沉力 (2px/帧 ≈ 0.2 vy @ 60fps)
+      if (tempClamped < 0.3) {
+        n.vy -= 0.2;
+      }
     }
   });
 

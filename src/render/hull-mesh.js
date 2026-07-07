@@ -27,9 +27,13 @@ export function createHullMesh(hullData) {
   const v3s = vertices.map((v) => new THREE.Vector3(v[0], v[1], v[2]));
 
   // 给每个顶点加微小噪声偏移(不规则性)
+  // P1-1 (TAS audit 2.6): 修 Perlin 负数 bug
+  // 原: `(sin(...) * 43758.5453) % 1` 对负数返回负数(JS 行为),noise ∈ [-1, 1) 而非 [0, 1)
+  // 导致 (noise - 0.5) * 8 偏移范围 [-12, 4] 而非 [-4, 4],多面体扭曲不对称
+  // 修: Math.abs 取绝对值,noise ∈ [0, 1),偏移范围 [-4, 4] 对称
   const noisyVerts = v3s.map((v, i) => {
     const seed = i * 0.73;
-    const noise = (Math.sin(seed * 12.9898 + seed * 78.233) * 43758.5453) % 1;
+    const noise = Math.abs((Math.sin(seed * 12.9898 + seed * 78.233) * 43758.5453) % 1);
     return v.clone().add(
       new THREE.Vector3(
         (noise - 0.5) * 8,
