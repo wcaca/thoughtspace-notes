@@ -4,7 +4,7 @@
 
 ---
 
-## §1 启动时序 (冷启动)
+## startup-cold-sequence (冷启动时序)
 
 ```
 HTML 加载
@@ -28,7 +28,7 @@ loop() 启动
 
 ---
 
-## §2 运行时: 用户拖动排序
+## runtime-drag-reorder (运行时拖动排序)
 
 ```
 用户在 observe-views 拖动卡片
@@ -49,7 +49,7 @@ src/main.js:applyObserveReorder(orderedIds, opts)
 
 ---
 
-## §3 运行时: 切换 canvas-mode
+## runtime-canvas-mode-switch (运行时切换 canvas-mode)
 
 ```
 用户点击 [块模式] / [背景分区] tab
@@ -74,7 +74,7 @@ canvas-mode === 'background'
 
 ---
 
-## §4 持久化 (待实施 T2.4)
+## persistence-todo-t24 (持久化,待实施 T2.4)
 
 > **当前状态**: T2.4 持久化层**未实施**。toJSON/fromJSON 函数已有,Yjs 调用未接。
 
@@ -96,7 +96,7 @@ currentCanvasMode.fromJSON(Y.Map.get('canvasMode'))
 
 ---
 
-## §5 跨模块接触点
+## cross-module-integration (跨模块接触点)
 
 | 主空间 (main.js) | SP-1 (observe-views.js) | 数据 |
 |---|---|---|
@@ -106,7 +106,7 @@ currentCanvasMode.fromJSON(Y.Map.get('canvasMode'))
 
 ---
 
-## §6 时序约束
+## timing-constraints (时序约束)
 
 | 操作 | 必须在...之前 |
 |---|---|

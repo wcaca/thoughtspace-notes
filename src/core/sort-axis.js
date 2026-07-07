@@ -146,6 +146,9 @@ export function createSortHistory() {
   // ⚠️ 易错: 副作用 = currentAxis 切到 manual,UI 需重读
   //   详见 [docs/notes/sp1/pitfalls.md#T1.4-recordOrder-side-effect]
   // @note(sp1, pitfall, T1.4-recordOrder-side-effect, since:2026-07-07)
+  // 📊 数据流: 运行时拖动排序 → recordOrder → manualOrder + activeAxes + recordEvolution
+  //   详见 [docs/notes/sp1/data-flow.md#runtime-drag-reorder]
+  // @note(sp1, data-flow, runtime-drag-reorder, since:2026-07-07)
   // 📋 SP-1.P0 最高原则: manualOrder 一旦记录,不被覆盖,= 信念轨迹
   // @note(sp1, decision, why-sort-axis-default-time, since:2026-07-07)
   recordEvolution();

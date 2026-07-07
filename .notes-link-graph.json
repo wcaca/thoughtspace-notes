@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-07-07T11:06:12.939Z",
+  "generatedAt": "2026-07-07T12:41:08.096Z",
   "stats": {
-    "totalLinks": 16,
-    "uniqueAnchors": 15,
+    "totalLinks": 21,
+    "uniqueAnchors": 20,
     "filesWithNotes": 6,
     "errors": 0,
     "warnings": 0
@@ -21,6 +21,13 @@
         "type": "decision",
         "anchor": "why-window-globals",
         "line": 32,
+        "since": "2026-07-07"
+      },
+      {
+        "subProject": "sp1",
+        "type": "data-flow",
+        "anchor": "startup-cold-sequence",
+        "line": 34,
         "since": "2026-07-07"
       }
     ],
@@ -75,6 +82,13 @@
         "anchor": "resolve-pipeline",
         "line": 130,
         "since": "2026-07-07"
+      },
+      {
+        "subProject": "shape",
+        "type": "pitfall",
+        "anchor": "isEdge-boundary-precision",
+        "line": 168,
+        "since": "2026-07-07"
       }
     ],
     "src\\core\\sort-axis.js": [
@@ -87,9 +101,16 @@
       },
       {
         "subProject": "sp1",
+        "type": "data-flow",
+        "anchor": "runtime-drag-reorder",
+        "line": 151,
+        "since": "2026-07-07"
+      },
+      {
+        "subProject": "sp1",
         "type": "decision",
         "anchor": "why-sort-axis-default-time",
-        "line": 150,
+        "line": 153,
         "since": "2026-07-07"
       }
     ],
@@ -126,9 +147,23 @@
       },
       {
         "subProject": "sp1",
+        "type": "data-flow",
+        "anchor": "runtime-canvas-mode-switch",
+        "line": 84,
+        "since": "2026-07-07"
+      },
+      {
+        "subProject": "sp1",
         "type": "pitfall",
         "anchor": "T2.1-ob-content-not-yet-attached",
-        "line": 136,
+        "line": 139,
+        "since": "2026-07-07"
+      },
+      {
+        "subProject": "sp1",
+        "type": "pitfall",
+        "anchor": "T2.1-panel-stack-onclose-collision",
+        "line": 265,
         "since": "2026-07-07"
       }
     ]
@@ -145,6 +180,13 @@
       {
         "file": "src\\bootstrap.js",
         "line": 32,
+        "since": "2026-07-07"
+      }
+    ],
+    "sp1:data-flow:startup-cold-sequence": [
+      {
+        "file": "src\\bootstrap.js",
+        "line": 34,
         "since": "2026-07-07"
       }
     ],
@@ -197,6 +239,13 @@
         "since": "2026-07-07"
       }
     ],
+    "shape:pitfall:isEdge-boundary-precision": [
+      {
+        "file": "src\\core\\shape-resolver.js",
+        "line": 168,
+        "since": "2026-07-07"
+      }
+    ],
     "sp1:pitfall:T1.4-recordOrder-side-effect": [
       {
         "file": "src\\core\\sort-axis.js",
@@ -209,10 +258,17 @@
         "since": "2026-07-07"
       }
     ],
+    "sp1:data-flow:runtime-drag-reorder": [
+      {
+        "file": "src\\core\\sort-axis.js",
+        "line": 151,
+        "since": "2026-07-07"
+      }
+    ],
     "sp1:decision:why-sort-axis-default-time": [
       {
         "file": "src\\core\\sort-axis.js",
-        "line": 150,
+        "line": 153,
         "since": "2026-07-07"
       }
     ],
@@ -237,10 +293,24 @@
         "since": "2026-07-07"
       }
     ],
+    "sp1:data-flow:runtime-canvas-mode-switch": [
+      {
+        "file": "src\\render\\observe-views.js",
+        "line": 84,
+        "since": "2026-07-07"
+      }
+    ],
     "sp1:pitfall:T2.1-ob-content-not-yet-attached": [
       {
         "file": "src\\render\\observe-views.js",
-        "line": 136,
+        "line": 139,
+        "since": "2026-07-07"
+      }
+    ],
+    "sp1:pitfall:T2.1-panel-stack-onclose-collision": [
+      {
+        "file": "src\\render\\observe-views.js",
+        "line": 265,
         "since": "2026-07-07"
       }
     ]

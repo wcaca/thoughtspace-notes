@@ -239,7 +239,7 @@ Keep the map aligned with the terrain, or the terrain will be lost.
 
 ### 不可违反的架构约束(本仓库)
 <!-- L1-MANIFEST-START -->
-<!-- L1 机器校验锚点:check-geb.mjs §L1 §ARCHITECTURE 段会解析以下 7 条,要求每条都有对应门禁 -->
+<!-- L1 机器校验锚点:check-geb.mjs §L1 §ARCHITECTURE 段会解析以下 8 条,要求每条都有对应门禁 -->
 1. **[L1-1]`src/core/**` 禁止 import 任何渲染库(PixiJS)或 d3-force 之外的第三方** → depcruise 规则: `core-no-render-lib`
 2. **[L1-2]`src/core/**` 禁止 import `src/{render, ui, persistence, sim}` 任何模块** → depcruise 规则: `core-no-upper-layer`
 3. **[L1-3]`src/sim/**` 禁止 import `src/{render, ui}` 任何模块** → depcruise 规则: `sim-no-render`

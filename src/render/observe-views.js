@@ -79,6 +79,9 @@ export function showObserveView(mode, thoughts, callbacks = {}) {
   // @note(sp1, integration, observe-views, since:2026-07-07)
   // 📋 决策: 为什么 canvas-mode 与 observe-mode 正交?
   // @note(sp1, decision, why-canvas-mode-orthogonal-to-observe-mode, since:2026-07-07)
+  // 📊 数据流: 切换 canvas-mode → setCanvasMode → refreshContent → renderBlockMode / renderBackgroundMode
+  //   详见 [docs/notes/sp1/data-flow.md#runtime-canvas-mode-switch]
+  // @note(sp1, data-flow, runtime-canvas-mode-switch, since:2026-07-07)
   let sp1Host = null;
   try {
     if (_isFlagOn('observe-mode-cohort-toggle') && typeof window !== 'undefined' && window.__sp1State) {
@@ -259,6 +262,7 @@ export function showObserveView(mode, thoughts, callbacks = {}) {
   // 注册到面板栈:panel-stack onClose 仅清理闭包对应旧 root,不动 activeOverlay/ESC(已指向新 root)
   // ⚠️ 易错: 不能动 activeOverlay,不能调 panel-stack.close('observe')(双重关闭)— T11 修复根因
   //   详见 [docs/notes/sp1/pitfalls.md#T2.1-panel-stack-onclose-collision]
+  // @note(sp1, pitfall, T2.1-panel-stack-onclose-collision, since:2026-07-07)
 import('./panel-stack.js').then(({ registerPanel }) => {
     registerPanel('observe', root, () => {
       if (root && root.parentNode) {

@@ -1,8 +1,10 @@
 /**
- * [INPUT]: { n: 总数, k: 聚焦数, hullHits: 0|1, dwellMs: 停留毫秒 }
+ * [INPUT]: { n: 总数, k: 聚焦数, hullHits: 0|1, dwellMs: 停留毫秒, flags? }
  * [OUTPUT]: shapeResolve({n,k,hullHits,dwellMs,weights?}) → { shape, score, transitions[], isEdge, isEmpty }
  * [POS]: src/core/shape-resolver.js — 形状自适应视图的核心判定;纯函数无副作用
  * [PROTOCOL]: 变更时更新此头部,然后检查 ../CLAUDE.md
+ *
+ * @note 注释补全(6 处:T10 决策 + 4 bug 陷阱 + 权重决策 + flag 注入接触点 + catch 静默陷阱 + 数据流入口)
  *
  * 设计哲学(T10 一致性修正):
  *  - 形状代表"用户看得多细",不是"全貌有多圆"
@@ -11,6 +13,13 @@
  *  - score 低 → 个体性弱 → 圆 · 看全貌
  *  - 与 5 天前 spec 保持一致:
  *      看全貌=圆,看个体=方,看一半=方+圆
+ *
+ * 📋 决策: 为什么 score = individuality 而不是 wholesomeness?
+ *   T10 语义反转 — 高 score → 方(看个体),与用户体感一致
+ * @note(shape, decision, why-individuality-not-wholesomeness, since:2026-07-07)
+ *
+ * ⚠️ 易错: 4 个一致性 bug 已修(空状态/selection 反转/阈值 0.5/dwell=0)
+ * @note(shape, pitfall, T10-bug1-empty-state-misjudged, since:2026-07-07)
  *
  * 4 档(从圆到方):
  *  - continuous        (score ≤ 0.25)  圆 · 全貌
@@ -40,6 +49,9 @@ export const SHAPE_ORDER = [
   SHAPES.DISCRETE
 ];
 
+// 📋 决策: 为什么默认权重 ratio=0.6 / hull=0.25 / dwell=0.15?
+//   ratio 最能反映个体性,权重最高;dwell 最弱,权重最低
+// @note(shape, decision, why-default-weights-0.6-0.25-0.15, since:2026-07-07)
 const DEFAULT_WEIGHTS = Object.freeze({ ratio: 0.6, hull: 0.25, dwell: 0.15 });
 
 const WEIGHT_PROFILES = Object.freeze({
@@ -93,6 +105,8 @@ function pickShape(score) {
 
 let _flagResolver = null;
 
+// 🔗 接触点: flag resolver 注入(src/runtime/flags/bootstrap.js → 此处)
+// @note(shape, integration, flag-resolver-injection, since:2026-07-07)
 export function setShapeFlagResolver(resolver) {
   _flagResolver = typeof resolver === 'function' ? resolver : null;
 }
@@ -104,11 +118,16 @@ function resolveWeights(weights) {
     try {
       const v = _flagResolver('shape-resolver-weights-v2', { bucket: 0 });
       if (v && typeof v === 'string' && WEIGHT_PROFILES[v]) profileName = v;
-    } catch {}
+    } catch {
+      // ⚠️ 易错: 静默吞异常,回退 balanced — 实验阶段容错优先,但无人知晓 flag 故障
+      // @note(shape, pitfall, flag-resolver-silent-catch, since:2026-07-07)
+    }
   }
   return WEIGHT_PROFILES[profileName] || DEFAULT_WEIGHTS;
 }
 
+// 📊 数据流: 输入 {n,k,hullHits,dwellMs} → 评分 → 4 档形状判定
+// @note(shape, data-flow, resolve-pipeline, since:2026-07-07)
 export function shapeResolve({ n, k, hullHits, dwellMs, weights, mode } = {}) {
   const safeN = Number.isFinite(n) && n > 0 ? Math.floor(n) : 0;
   const safeK = Number.isFinite(k) && k > 0 ? Math.floor(k) : 0;
@@ -144,6 +163,9 @@ export function shapeResolve({ n, k, hullHits, dwellMs, weights, mode } = {}) {
   const idx = SHAPE_ORDER.indexOf(shape);
   const transitions = SHAPE_ORDER.filter((_, i) => i !== idx);
 
+  // ⚠️ 易错: isEdge 用 ±0.03 边界窗口(0.22~0.28/0.47~0.53/0.72~0.78),精确匹配阈值过渡点
+  //   详见 [docs/notes/shape/pitfalls.md#isEdge-boundary-precision]
+  // @note(shape, pitfall, isEdge-boundary-precision, since:2026-07-07)
   const isEdge = score > 0.22 && score < 0.28
     || score > 0.47 && score < 0.53
     || score > 0.72 && score < 0.78;

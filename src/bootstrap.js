@@ -30,6 +30,8 @@ export async function initBootstrap() {
   // 📋 决策: 为什么用 window.__sp1State 而非 ESM import?
   //   详见 [docs/notes/sp1/decisions.md#why-window-globals]
   // @note(sp1, decision, why-window-globals, since:2026-07-07)
+  // 📊 数据流: 启动时序(冷启动) — 见 [docs/notes/sp1/data-flow.md#startup-cold-sequence]
+  // @note(sp1, data-flow, startup-cold-sequence, since:2026-07-07)
   const currentLayerStore = createLayerStore();
   const currentSortHistory = createSortHistory();
   const currentCanvasMode = createCanvasMode();

@@ -12,7 +12,7 @@
 // 注释格式:
 //   // @note(sp1, pitfall, T1.4-no-bootstrap, since:2026-07-07)
 //   // @note(sp1, decision, why-window-globals, since:2026-07-07)
-//   // @note(sp1, data-flow, #启动时序, since:2026-07-07)
+//   // @note(sp1, data-flow, resolve-pipeline, since:2026-07-07)
 //   // @note(sp1, integration, observe-views, since:2026-07-07)
 //
 // 第一参: sub-project (sp1, sp2, shape, topology, etc.)
