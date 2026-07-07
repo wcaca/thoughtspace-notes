@@ -76,6 +76,11 @@
 | `2026-07-05-trae-mcp-and-project-rules-bootstrap-design.md` | 🟢 底座 | 2026-07-05 | .trae/rules/project_rules.md | TRAE 规则引导,稳定 |
 | `2026-07-06-shape-adaptive-views-design.md` | 🟡 焦点 | 2026-07-06 | src/core/shape-resolver.js + shape-indicator.js | 形状哲学,正在实验和修订（T10 语义反转后） |
 | `2026-07-07-kanban-layered-space-design.md` | 🔵 沉淀 | 2026-07-07 | src/core/layer-store.js + sort-axis.js + canvas-mode.js + src/main.js + observe-views.js | SP-1 全部完成(T0 数据层 + T1 装配 + T2 UI + T3 测试),506 测试全过 |
+| `2026-07-07-core-data-model-design.md` | 🔵 沉淀 | 2026-07-07 | src/core/thought.js + edge.js + zone.js | 核心不可变 schema 契约,底座 |
+| `2026-07-07-persistence-yjs-bridge-design.md` | 🔵 沉淀 | 2026-07-07 | src/persistence/* (all files) | Yjs 单一权威源 + bridge 镜像 + 撤销/导入导出契约 |
+| `2026-07-07-topology-sim-design.md` | 🔵 沉淀 | 2026-07-07 | src/topology/cube-camera.js + convex-hull.js + src/sim/force-3d.js | 力导向仿真+凸包+魔方相机;force-3d 合并治理完成 |
+| `2026-07-07-render-layer-design.md` | 🔵 沉淀 | 2026-07-07 | src/render/* (all files) | 渲染层 umbrella:视角总线/面板栈/3D 实体/工具/横切 |
+| `2026-07-07-feature-flag-system-design.md` | 🟡 焦点 | 2026-07-07 | src/runtime/flags/* (all files) | Feature Flag 三态分离 + 回归测试集成 + 5 状态生命周期 |
 
 ### 2.2 当前 plan 清单与状态
 
@@ -103,7 +108,7 @@
 |---|---|---|---|---|
 | `thought.js` | 🟢 底座 | 念头数据模型 | 29 | 不可变 schema |
 | `edge.js` | 🟢 底座 | 边数据模型 | 23 | 不可变 schema |
-| `zone.js` | 🟢 底座 | 用户自定义分区 | 10 | 已被 spec §3.2 layer-store 部分扩展 |
+| `zone.js` | 🟡 焦点 | 用户自定义分区 | 10 | 已接入主流程,SP-3 深度集成念头归属 |
 | `index.js` | 🟢 底座 | 桶导出 | - | 自动生成 |
 | `action.js` | 🔵 沉淀 | 行为定义 | 19 | 已稳定 |
 | `edge.js`（已有,见上）| - | - | - | - |
@@ -113,24 +118,52 @@
 | `insight-copilot.js` | 🔵 沉淀 | 灵感助手 | 6 | 已稳定 |
 | `meditation.js` | 🔵 沉淀 | 冥想 | 10 | 已稳定 |
 | `reunion.js` | 🔵 沉淀 | 重聚 | 20 | 已稳定 |
-| `shape-resolver.js` | 🟡 焦点 | 形状哲学核心 | 20 | T10 语义反转后,仍在调权重 |
+| `shape-resolver.js` | 🟡 焦点 | 形状哲学核心 | 20 | T10 语义反转后,默认权重待体感验证 |
 | `structure.js` | 🔵 沉淀 | 结构工具 | 6 | 已稳定 |
-| `layer-store.js` | 🟡 焦点 | SP-1 层管理 | 29 | 新增,数据层完成 |
-| `sort-axis.js` | 🟡 焦点 | SP-1 排序哲学 | 43 | 新增,数据层完成 |
+| `layer-store.js` | 🔵 沉淀 | SP-1 层管理 | 29 | SP-1 完成,已稳定 |
+| `sort-axis.js` | 🔵 沉淀 | SP-1 排序哲学 | 43 | SP-1 完成,已稳定 |
 
 ### 3.2 src/render/（渲染层,负责 DOM/Canvas/3D）
 
 | 文件 | 状态 | 角色 | 测试数 | 备注 |
 |---|---|---|---|---|
-| `observe-views.js` | 🟡 焦点 | 三视图 + 形状指示器 | 2 | T11 修复递归关闭 bug |
+| `canvas.js` | 🔵 沉淀 | 渲染入口 | - | 主入口 |
+| `scene.js` | 🔵 沉淀 | Three.js 场景 | - | 已稳定 |
+| `thought-sphere.js` | 🔵 沉淀 | 念头球体 3D | - | 已稳定 |
+| `hull-mesh.js` | 🔵 沉淀 | 凸包网格 | - | 已稳定 |
+| `zone-mesh.js` | 🔵 沉淀 | 分区 3D 可视化 | - | 已稳定 |
+| `sediment-layer.js` | 🔵 沉淀 | 沉积层 | - | 已稳定 |
+| `crystallize-fx.js` | 🔵 沉淀 | 结晶特效 | - | 已稳定 |
 | `viewport-state.js` | 🟢 底座 | 统一视角总线 | 28 | 不可变 schema |
 | `viewport-bridge.js` | 🔵 沉淀 | 总线桥接 | 9 | 已稳定 |
-| `shape-indicator.js` | 🟡 焦点 | 形状哲学可视化 | 21 | T10 反转后,标签"圆/方·选 X%" |
-| `canvas-mode.js` | 🟡 焦点 | SP-1 双模式状态机 | 15 | 新增,数据层完成 |
+| `canvas-mode.js` | 🔵 沉淀 | SP-1 双模式状态机 | 15 | SP-1 完成 |
+| `ambient-life.js` | 🔵 沉淀 | 存在感引擎 | - | 已稳定 |
+| `thought-node.js` | 🔵 沉淀 | 念头节点渲染交互 | - | 已稳定 |
+| `edge-line.js` | 🔵 沉淀 | 边几何绘制 | - | 已稳定 |
 | `panel-stack.js` | 🟢 底座 | 单开面板协调器 | 6 | 不可变 schema |
-| `a11y.js` | 🔵 沉淀 | 无障碍 | 8 | 已稳定 |
+| `overlay-panel.js` | 🔵 沉淀 | 浮动面板基类 | - | 已稳定 |
+| `outside-click.js` | 🔵 沉淀 | 空白点击关闭 | - | 已稳定 |
+| `detail-panel.js` | 🔵 沉淀 | 念头详情面板 | - | 已稳定 |
+| `edge-panel.js` | 🔵 沉淀 | 边编辑面板 | - | 已稳定 |
+| `crystal-panel.js` | 🔵 沉淀 | 结晶入口面板 | - | 已稳定 |
+| `action-panel.js` | 🔵 沉淀 | 行动萃取面板 | - | 已稳定 |
+| `copilot-panel.js` | 🔵 沉淀 | 灵感助手面板 | - | 已稳定 |
+| `zone-panel.js` | 🔵 沉淀 | 分区管理面板 | - | 已稳定 |
+| `help-panel.js` | 🔵 沉淀 | 按键说明面板 | - | 已稳定 |
+| `export-panel.js` | 🔵 沉淀 | 导出导入面板 | - | 已稳定 |
+| `observe-views.js` | 🔵 沉淀 | 观察模式三视图 | 2 | SP-1 完成 |
+| `shape-indicator.js` | 🔵 沉淀 | 形状哲学可视化 | 21 | SP-1 完成 |
+| `toolbar.js` | 🔵 沉淀 | 工具条 | - | 已稳定 |
+| `quick-add.js` | 🔵 沉淀 | 快速捕获浮层 | - | 已稳定 |
+| `command-palette.js` | 🔵 沉淀 | 命令面板 | - | 已稳定 |
+| `global-search.js` | 🔵 沉淀 | 全局搜索 | - | 已稳定 |
+| `relation-picker.js` | 🔵 沉淀 | 关系选择器 | - | 已稳定 |
+| `voice-capture.js` | 🔵 沉淀 | 语音录入 | - | 已稳定 |
+| `contemplate-overlay.js` | 🔵 沉淀 | 静观计时 | - | 已稳定 |
+| `reunion-toast.js` | 🔵 沉淀 | 重逢提示 | - | 已稳定 |
 | `error-handler.js` | 🔵 沉淀 | 全局错误捕获 | - | 已稳定 |
-| 其他 23 个面板 | 🔵 沉淀 | 各种 UI 面板 | - | 已稳定 |
+| `awareness-hud.js` | 🔵 沉淀 | 觉察 HUD | - | 已稳定 |
+| `a11y.js` | 🔵 沉淀 | 无障碍 | 8 | 已稳定 |
 
 ### 3.3 src/topology/（3D 拓扑层）
 
@@ -138,7 +171,8 @@
 |---|---|---|---|
 | `cube-camera.js` | 🔵 沉淀 | 立方体相机 | 已稳定 |
 | `convex-hull.js` | 🔵 沉淀 | 凸包计算 | 已稳定 |
-| `force-3d.js` | 🔵 沉淀 | 3D 力导向 | 已稳定 |
+
+> 注: force-3d.js 自有实现已于 2026-07-07 删除 (P0-4 合并),生产使用 src/sim/force-3d.js (基于 d3-force-3d)。
 
 ### 3.4 scripts/
 
@@ -147,11 +181,34 @@
 | `check-arch.mjs` | 🟢 底座 | 架构守卫 | GEB 工具 |
 | `check-geb.mjs` | 🟢 底座 | GEB 守卫 | GEB 工具 |
 | `check-note-links.mjs` | 🟡 焦点 | **注释时间拓扑门禁** | @note 格式 + 双向验证 + 生成 .notes-link-graph.json |
+| `check-topology.mjs` | 🟡 焦点 | **拓扑表一致性门禁** | 校验拓扑表与实际文件/spec 的对应关系 |
+| `check-spec-coverage.mjs` | 🟡 焦点 | **Spec 覆盖率门禁** | 检查代码与 spec 的关联覆盖率 |
+| `check-spec-topology.mjs` | 🟡 焦点 | **Spec 拓扑规则门禁** | 检查 spec 的层、scope、overrides、inherits、conflicts 拓扑规则 |
+| `check-flag-topology.mjs` | 🟡 焦点 | **Feature Flag 拓扑门禁** | 检查 flag 引用一致性、scope、lifecycle、regression_subset |
+| `check-non-negotiable.mjs` | 🟡 焦点 | **Non-negotiable 代码语义校验** | P0-6:把 spec 的 hard constraint 自动映射为代码语义检查 |
+| `check-orphans.mjs` | 🟡 焦点 | **孤儿代码 + madge 循环检测** | P1-1:补充 depcruise 漏掉的动态 import 循环 + 检测无引用文件 |
+| `check-typecheck.mjs` | 🟡 焦点 | **渐进式 tsc 类型检查** | P1-2:tsc --noEmit --checkJs,统计类型错误数(渐进模式,不阻塞 commit) |
+| `check-test-spec-linkage.mjs` | 🟡 焦点 | **测试-决策溯源** | P1-4:把测试失败按 spec 决策 ID 分组,定位违反哪条决策 |
+| `check-spec-drift.mjs` | 🟡 焦点 | **Spec 决策漂移检测** | P2-4:实验性 spec 的 decision 数值与代码实际值对比, 超出 drift_tolerance → WARN |
+| `generate-flag-registry.mjs` | 🟡 焦点 | **Flag registry 自动生成** | 从 spec frontmatter 抽取 flags: 字段生成 registry.js |
+| `generate-holo-index.mjs` | 🟡 焦点 | **全息索引生成** | 生成代码↔spec↔原文三层环形映射索引 |
+| `generate-holo-report.mjs` | 🟡 焦点 | **全息仪表盘生成** | P1-3:基于 .holo-index.json 生成决策时间线 + 孤儿清单 + 关联分类 |
 | `bootstrap.mjs` | 🟢 底座 | 引导脚本 | GEB 工具 |
 | `install-hooks.mjs` | 🟢 底座 | 安装 git hooks | GEB 工具 |
 | `sync-mcp-config.mjs` | 🟢 底座 | 同步 MCP 配置 | GEB 工具 |
 | `verify-trae-rules.mjs` | 🟢 底座 | 验证 TRAE 规则 | GEB 工具 |
 | `hooks/pre-commit` | 🟢 底座 | Git 钩子 | GEB 工具 |
+
+### 3.4.5 src/runtime/（运行时基础设施层）
+
+| 文件 | 状态 | 角色 | 备注 |
+|---|---|---|---|
+| `flags/registry.js` | 🟡 焦点 | Flag 静态注册表 | 从 spec frontmatter 自动生成 |
+| `flags/source-chain.js` | 🟡 焦点 | Flag 4 层 lookup（URL/localStorage/Yjs/static） | 运行时配置 |
+| `flags/variant.js` | 🟡 焦点 | cohort / rollout 解析 | A/B 灰度 |
+| `flags/kill-switch.js` | 🟡 焦点 | 紧急熔断 | KILL_<DOMAIN> 命名 |
+| `flags/index.js` | 🟡 焦点 | 对外 API | isOn/getVariant/setOverride |
+| `flags/bootstrap.js` | 🟡 焦点 | flag resolver 注入 | 一次性副作用 |
 
 ### 3.5 文档层
 
@@ -161,6 +218,7 @@
 | `/src/core/CLAUDE.md` | 🟢 底座 | L2 核心层地图 | 文件增删时更新 |
 | `/src/render/CLAUDE.md` | 🟢 底座 | L2 渲染层地图 | 文件增删时更新 |
 | `/docs/superpowers/specs/CLAUDE.md` | 🟢 底座 | L2 spec 索引 | 文档系统规则 |
+| `/docs/superpowers/specs/README-TOPOLOGY.md` | 🟡 焦点 | Spec 拓扑规则系统实施指南 | 多层非绝对指导性的元规则与裁决算法 |
 | `/docs/superpowers/plans/CLAUDE.md` | 🟢 底座 | L2 plan 索引 | 文档系统规则 |
 | `/docs/superpowers/CLAUDE.md` | 🟢 底座 | L2 superpowers 索引 | 文档系统规则 |
 | `/docs/audit/CLAUDE.md` | 🟢 底座 | L2 audit 索引 | 文档系统规则 |
@@ -229,10 +287,10 @@
 | 议题 | 描述 | 状态 | 决策建议 |
 |---|---|---|---|
 | **phase-0-lightweight-restructure-design.md** | 原 Phase 0 蓝图,被拓扑意识空间 spec 完全重做 | ⚪ 已废弃 | 已决定废弃,保留仅供历史 |
-| **zone.js 与 layer-store.js 关系** | zone 是 3D 球形分区(已有),layer 是用户自定义意识层级(SP-1 新增);两者关系未明确 | 🔴 孤儿 | **待决策**:zone 是否合并入 layer?或 layer 是 zone 的视图投影?或两者独立? |
-| **shape-resolver 默认权重** | T10 后 ratio=0.6 / hull=0.25 / dwell=0.15,但 50% 选 100% 才落到 discrete_with_metric,可能需要调 | 🟡 焦点 | 待你体感验证后调整 |
+| **zone.js 与 layer-store.js 关系** | zone 是 3D 球形分区(已有),layer 是用户自定义意识层级(SP-1 新增);两者关系未明确 | 🔵 已决策 | **结论:正交互补,互不替代**。Layer=意识深度(Y轴),Zone=内容主题(X-Z平面)。详见 [why-layer-orthogonal-to-zone](notes/sp1/decisions.md#why-layer-orthogonal-to-zone) |
+| **shape-resolver 默认权重** | T10 后 ratio=0.6 / hull=0.25 / dwell=0.15,但 50% 选 100% 才落到 discrete_with_metric,可能需要调 | 🟡 焦点 | 待体感验证后调整,先移到 backlog |
 | **failure fallback "手动切形态"开关** | spec 承诺实验不通过时回退,目前未实施 | 🟡 焦点 | 待形状哲学稳定后实施 |
-| **观察模式 ↔ canvas-mode 关系** | observe-mode(cards/kanban/timeline) 与 canvas-mode(background/block) 正交,但 UI 上怎么组合 | 🟡 焦点 | SP-1 UI 阶段决定 |
+| **观察模式 ↔ canvas-mode 关系** | observe-mode(cards/kanban/timeline) 与 canvas-mode(background/block) 正交,但 UI 上怎么组合 | 🔵 已决策 | **结论:正交,任意组合**。canvas-mode=block 时忽略 observe-mode。详见 [why-canvas-mode-orthogonal-to-observe-mode](notes/sp1/decisions.md#why-canvas-mode-orthogonal-to-observe-mode) |
 | **SP-2 何时启动** | 内容块数据模型(嵌套笔记 + 富内容) 是独立 sub-project | 🟡 焦点 | SP-1 UI 完成或暂停时启动 |
 
 ---
@@ -256,12 +314,12 @@
 
 | 指标 | 健康范围 | 当前 |
 |---|---|---|
-| 🟡 焦点数量 | 1-3 个（过多 = 注意力分散）| **5 个**（形状哲学 4 项 + SP-1 数据层 3 项）|
-| 🔴 孤儿数量 | 0-2 个 | **1 个**（zone vs layer 关系）|
+| 🟡 焦点数量 | 1-3 个（过多 = 注意力分散）| **4 个**（形状哲学 2 项 + zone + SP-2 启动时机）|
+| 🔴 孤儿数量 | 0-2 个 | **0 个**（zone vs layer 关系已决策）|
 | ⚪ 废弃数量 | 历史保留,新增应少见 | **1 个** |
 | 🟢 底座数量 | 10-20 个（稳定底座）| **15+ 个**（合规）|
 
-> **当前健康**：基本健康,但 🟡 焦点 5 个略多（建议 SP-1 UI 完成后 → 🔵 沉淀 1-2 个）。
+> **当前健康**：健康。🟡 焦点从 5 个减到 4 个（SP-1 相关都沉淀了）,🔴 孤儿清零。
 
 ---
 

@@ -5,6 +5,20 @@
  * [PROTOCOL]: 变更时更新此头部,然后检查 ../CLAUDE.md
  */
 
+/**
+ * @typedef {Object} Thought
+ * @property {string} id
+ * @property {string} text
+ * @property {string} [body]
+ * @property {number} [x]
+ * @property {number} [y]
+ * @property {number} [z]
+ * @property {number} [temperature]
+ * @property {string[]} [tags]
+ * @property {number} [createdAt]
+ * @property {number} [updatedAt]
+ */
+
 const DEFAULT_LAMBDA = 0.05;
 
 export function createThought(id, text, x, y) {
@@ -39,4 +53,42 @@ export function updateMass(thought, editions, references) {
 
 export function getName(thought) {
   return thought.text.slice(0, 6);
+}
+
+/**
+ * 标准化标签: 去前后空白、压缩中间空格、转小写
+ * 用于全文搜索的字符串归一化(中英文都兼容)
+ * @param {string} s
+ * @returns {string}
+ */
+export function normalizeLabel(s) {
+  if (typeof s !== 'string') return '';
+  return s.replace(/^#+/, '').replace(/\s+/g, ' ').trim().toLowerCase();
+}
+
+export function warmThought(thought, nowMs, amount) {
+  const currentTemp = thought.temperature ?? 1;
+  const nextTemp = Math.max(0, Math.min(1, currentTemp + (amount ?? 0.5)));
+  return { ...thought, temperature: nextTemp, lastInteractionAt: nowMs };
+}
+
+export function addLabel(thought, label) {
+  const normalized = normalizeLabel(label);
+  if (!normalized) return thought;
+  const labels = Array.isArray(thought.labels) ? [...thought.labels] : [];
+  if (!labels.includes(normalized)) {
+    labels.push(normalized);
+  }
+  return { ...thought, labels };
+}
+
+export function removeLabel(thought, label) {
+  const normalized = normalizeLabel(label);
+  if (!normalized || !Array.isArray(thought.labels)) return thought;
+  const labels = thought.labels.filter((l) => l !== normalized);
+  return { ...thought, labels };
+}
+
+export function setColorTag(thought, colorTag) {
+  return { ...thought, colorTag: colorTag ?? null };
 }

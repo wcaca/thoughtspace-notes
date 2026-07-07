@@ -1,3 +1,44 @@
+---
+id: kanban-layered-space
+title: 看板分层与双模式空间 (SP-1)
+status: sediment
+phase: draft                # P2-1: 设计已凝固 (sediment) 但尚未批准实施 (draft)
+layer: L2-domain
+scope:
+  global: false
+  modules: [src/core, src/render]
+  files: [src/core/layer-store.js, src/core/sort-axis.js, src/render/canvas-mode.js, src/render/observe-views.js, src/main.js]
+  lines: []
+priority: 85
+created: 2026-07-07
+updated: 2026-07-07
+experiment_window: 2026-07-07 ~ 2026-07-14   # P2-1: 7 天设计验证窗口
+inherits-from:
+  - topological-awareness-space
+  - core-data-model
+  - shape-adaptive-views
+supersedes: []
+decisions:
+  - id: SP1-P0
+    statement: "不压制信念排序：排序与嵌套应由用户行为学习而非系统强制"
+    scope: src/core/sort-axis.js
+    lock_state: floating          # P2-1: 实验性决策可浮动
+    drift_tolerance: 0.20
+  - id: SP1-P1
+    statement: "多轴能力存在但默认隐藏，召唤手势应优雅不打扰"
+    scope: src/render/canvas-mode.js
+    lock_state: floating
+    drift_tolerance: 0.20
+  - id: SP1-GEO
+    statement: "Y 轴天然映射屏幕上下（与重力一致），降低认知负担"
+    scope: src/core/layer-store.js
+    lock_state: floating
+    drift_tolerance: 0.15
+non-negotiable:
+  - "排序与嵌套不应由系统强制（SP-1.P0 最高优先级）"
+  - "canvas-mode 与 observe-mode 正交"
+---
+
 # 看板分层与双模式空间 — 设计 Spec (SP-1)
 
 > 把"看板视图"从一个 2D 表格升级为**认知空间的双模界面**：

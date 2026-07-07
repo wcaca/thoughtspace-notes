@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "_comment": "M1-2 (2026-07-07): 创建 tsconfig 让 check:typecheck 真正运行 (原先因缺失 tsconfig 永远 exit 0 装饰性门禁). 渐进模式 - allowJs 不强制 checkJs",
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "allowJs": true,
+    "checkJs": false,
+    "noEmit": true,
+    "strict": false,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": false,
+    "types": []
+  },
+  "include": [
+    "src/**/*.js",
+    "src/**/*.mjs",
+    "scripts/**/*.mjs"
+  ],
+  "exclude": [
+    "node_modules",
+    "tests",
+    "vendor",
+    "docs"
+  ]
+}

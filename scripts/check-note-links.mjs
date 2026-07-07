@@ -233,9 +233,55 @@ function printReport(graph) {
   }
 }
 
+function checkNegativeCoverage() {
+  // P0-3: 含 TODO/FIXME/⚠️ 等"待决策标记"的文件,必须同时存在至少一个 @note
+  // 防止"按需加载笔记"机制被空集合绕过
+  const TRIGGERS = [
+    /\bTODO\b/,                           // 全大写 TODO 注释
+    /\bFIXME\b/i,
+    /\bXXX\b/,
+    /\bHACK\b/i,
+    /易错/,
+    /未决/i,
+    /暂未启用/
+  ];
+  // 排除:[OUTPUT] 字段中的 createEdgeBridge 等示例文本,以及 AUTO-GENERATED 元数据
+  const FILE_PATTERNS = walk(SRC_DIR);
+  const coveredFiles = new Set(links.map((l) => posix(l.file)));
+  for (const file of FILE_PATTERNS) {
+    const relFile = posix(relative(ROOT, file));
+    const text = readFileSync(file, 'utf8');
+    const lines = text.split('\n');
+    let flagged = false;
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      if (/@note\(/.test(line)) continue;
+      // 排除头部注释块 (// [INPUT]:, // [OUTPUT]:, // [POS]:, // [PROTOCOL]:) 与 AUTO-GEN 元数据
+      if (/^\s*\/\/\s*\[(INPUT|OUTPUT|POS|PROTOCOL)\]:/.test(line)) continue;
+      if (/AUTO-GENERATED|AUTO-GEN/.test(line)) continue;
+      for (const re of TRIGGERS) {
+        if (re.test(line)) {
+          flagged = true;
+          break;
+        }
+      }
+      if (flagged) break;
+    }
+    if (flagged && !coveredFiles.has(relFile)) {
+      errors.push({
+        file: relFile,
+        line: 1,
+        msg: `负向门禁 P0-3: 含 TODO/FIXME/易错/未决 等触发词,但文件无任何 @note 链接`
+      });
+      coveredFiles.add(relFile);
+    }
+  }
+}
+
 function main() {
   scanFiles();
   validateLinks();
+  checkNegativeCoverage();
   const graph = buildGraph();
   printReport(graph);
 

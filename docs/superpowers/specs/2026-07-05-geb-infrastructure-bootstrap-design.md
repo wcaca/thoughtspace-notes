@@ -1,3 +1,24 @@
+---
+id: geb-infrastructure-bootstrap
+title: GEB 基础设施 Bootstrap
+status: base
+phase: implemented           # P2-1: 架构底座已实施稳定
+layer: L1-architecture
+scope:
+  global: false
+  modules: [scripts]
+  files: []
+  lines: []
+priority: 100
+created: 2026-07-05
+updated: 2026-07-07
+inherits-from: []
+supersedes: []
+non-negotiable:
+  - "GEB 协议必须由 build-time 门禁强制"
+  - "L1/L2/L3 三层分形结构不可破坏"
+---
+
 # GEB 基础设施 Bootstrap — 设计子 spec
 
 > 让 L1/L2/L3 协议从"写在文档里"变成"违反就 build fail"。

@@ -1,3 +1,28 @@
+---
+id: topological-awareness-space
+title: 拓扑意识空间
+status: sediment
+phase: experiment            # P2-1: 设计已凝固,但 5-7 天实验窗口仍在进行 (T2/T3)
+experiment_window: 2026-07-05 ~ 2026-07-12
+layer: L1-architecture
+scope:
+  global: false
+  modules: [src/topology, src/render]
+  files: [src/topology/convex-hull.js, src/topology/cube-camera.js]
+  lines: []
+priority: 90
+created: 2026-07-05
+updated: 2026-07-07
+inherits-from:
+  - geb-infrastructure-bootstrap
+supersedes:
+  - phase-0-lightweight-restructure
+non-negotiable:
+  - "数据模型不变，形状是视图决策"
+  - "连线消失，由空间位置暗示关系"
+  - "Yjs + IndexedDB 持久化层不变"
+---
+
 # 拓扑意识空间 — 重做设计 Spec
 
 > 对 Phase 0 原型的**根本性重做**。旧原型是"连线+2D 星团"，新设计是"不规则多面体拓扑意识空间"。

@@ -238,13 +238,16 @@ Keep the map aligned with the terrain, or the terrain will be lost.
 记录是播种,整理是耕作,观察是静观其生长与凋零,行动是收获。
 
 ### 不可违反的架构约束(本仓库)
-1. `src/core/**` 禁止 import 任何渲染库(PixiJS)或 d3-force 之外的第三方
-2. `src/core/**` 禁止 import `src/{render, ui, persistence, sim}` 任何模块
-3. `src/sim/**` 禁止 import `src/{render, ui}` 任何模块
-4. Yjs 文档是唯一权威数据源,IndexedDB 只是可重建的镜像
-5. AI/自动化建议必须以"半透明预览"形式呈现,不得直接修改用户数据
-6. 用户笔记内容默认不上云,云同步/AI 增强需用户主动开启
-7. 全部算法公式与阈值(温度 λ=0.05、结晶 0.7、关系颜色)定义在 spec 中,代码不允许擅自修改
+<!-- L1-MANIFEST-START -->
+<!-- L1 机器校验锚点:check-geb.mjs §L1 §ARCHITECTURE 段会解析以下 7 条,要求每条都有对应门禁 -->
+1. **[L1-1]`src/core/**` 禁止 import 任何渲染库(PixiJS)或 d3-force 之外的第三方** → depcruise 规则: `core-no-render-lib`
+2. **[L1-2]`src/core/**` 禁止 import `src/{render, ui, persistence, sim}` 任何模块** → depcruise 规则: `core-no-upper-layer`
+3. **[L1-3]`src/sim/**` 禁止 import `src/{render, ui}` 任何模块** → depcruise 规则: `sim-no-render`
+4. **[L1-4] Yjs 文档是唯一权威数据源,IndexedDB 只是可重建的镜像** → check-spec-topology.mjs 验证 `persistence-yjs-bridge` 的 non-negotiable
+5. **[L1-5] AI/自动化建议必须以"半透明预览"形式呈现,不得直接修改用户数据** → check-non-negotiable.mjs GUARDS L1-5 守卫 (检测 copilot-panel.js cp-preview 标记 + ctx.onCreate* 调用必须在 enterPreview 闭包内)
+6. **[L1-6] 用户笔记内容默认不上云,云同步/AI 增强需用户主动开启** → check-non-negotiable.mjs GUARDS L1-6 守卫 (Phase 0 检测 fetch('http') / WebSocket / ServiceWorker 注册 — 白名单 localhost/127.0.0.1)
+7. **[L1-7] 全部算法公式与阈值(温度 λ=0.05、结晶 0.7、关系颜色)定义在 spec 中,代码不允许擅自修改** → check-spec-drift.mjs 解析 spec decisions[].statement 提取 key=value,在代码中匹配 `const X = Object.freeze({key:value})` 并计算漂移 (M1-4 更新: 原 grep guard 未实现,由 check-spec-drift 取代;locked→FATAL / floating→WARN)
+<!-- L1-MANIFEST-END -->
 
 ### 当前所处阶段
 **Phase 0 - 概念验证(起步中)**

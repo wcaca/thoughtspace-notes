@@ -12,10 +12,13 @@ import { createHullMesh } from './render/hull-mesh.js';
 import { createSedimentLayer } from './render/sediment-layer.js';
 import { computeHull } from './topology/convex-hull.js';
 import { createSim3D, restartSim } from './sim/force-3d.js';
-import { initPersistence, getThoughts, getEdges, getUndoManager, transact } from './persistence/yjs-store.js';
+import { initPersistence, getThoughts, getEdges, getUndoManager, transact, getZones, getDoc } from './persistence/yjs-store.js';
 import { createThought, decayTemperature, refreshTemperature } from './core/thought.js';
 import { createEdge, RelationType } from './core/edge.js';
 import { createLayerStore } from './core/layer-store.js';
+import { createZoneStore } from './core/zone.js';
+import { createZoneBridge } from './persistence/zone-bridge.js';
+import { createZoneMesh } from './render/zone-mesh.js';
 import { createSortHistory } from './core/sort-axis.js';
 import { createCanvasMode } from './render/canvas-mode.js';
 
@@ -34,6 +37,12 @@ const currentLayerStore = createLayerStore();
 const currentSortHistory = createSortHistory();
 const currentCanvasMode = createCanvasMode();
 currentLayerStore.bootstrapDefaults();
+
+const currentZoneStore = createZoneStore();
+const yZones = getZones();
+const currentZoneBridge = createZoneBridge(currentZoneStore, yZones, getDoc());
+currentZoneBridge.syncToStore();
+
 const yThoughts = getThoughts();
 const yEdges = getEdges();
 const undoManager = getUndoManager();
@@ -42,6 +51,8 @@ const { scene, camera, renderer } = createScene(container);
 const cubeCam = createCubeCamera(camera, container);
 const faceIndicator = createFaceIndicator(document.body);
 const sediment = createSedimentLayer(scene);
+const zoneMesh = createZoneMesh(currentZoneStore, scene);
+zoneMesh.rebuild();
 
 cubeCam.onFaceChange((face) => faceIndicator.update(face));
 
@@ -94,6 +105,10 @@ function rebuildScene() {
 
 yThoughts.observeDeep(() => requestAnimationFrame(rebuildScene));
 yEdges.observeDeep(() => requestAnimationFrame(rebuildScene));
+yZones.observeDeep(() => {
+  currentZoneBridge.syncToStore();
+  requestAnimationFrame(() => zoneMesh.rebuild());
+});
 
 // ---- 交互: 点击空白投念头 ----
 renderer.domElement.addEventListener('click', (e) => {
@@ -215,5 +230,24 @@ window.__sp1State = {
   setCanvasMode: (m) => currentCanvasMode.setMode(m),
   setCurrentAxis: (a) => currentSortHistory.setCurrentAxis(a),
   recordManualOrder: (ids) => currentSortHistory.recordOrder(ids),
-  bootstrapLayerDefaults: () => currentLayerStore.bootstrapDefaults()
+  bootstrapLayerDefaults: () => currentLayerStore.bootstrapDefaults(),
+  getZones: () => currentZoneStore.list(),
+  getZoneStore: () => currentZoneStore,
+  getZoneMesh: () => zoneMesh,
+  addZone: (spec) => {
+    const z = currentZoneStore.add(spec);
+    currentZoneBridge.syncToDoc();
+    return z;
+  },
+  updateZone: (id, patch) => {
+    const z = currentZoneStore.update(id, patch);
+    currentZoneBridge.syncToDoc();
+    return z;
+  },
+  removeZone: (id) => {
+    const ok = currentZoneStore.remove(id);
+    currentZoneBridge.syncToDoc();
+    return ok;
+  },
+  classifyThoughtToZone: (thought) => currentZoneStore.classify(thought)
 };

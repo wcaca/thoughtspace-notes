@@ -26,6 +26,20 @@ export default {
       comment: 'FATAL-005 / L1 架构约束 3: sim 禁止依赖 render/ui',
       from: { path: '^src/sim' },
       to: { path: '^src/(render|ui)' }
+    },
+    {
+      name: 'runtime-no-core',
+      severity: 'error',
+      comment: 'FATAL-005 / L1 架构约束 4: runtime 禁止被 core 依赖(core 必须保持纯逻辑可单测)',
+      from: { path: '^src/core' },
+      to: { path: '^src/runtime' }
+    },
+    {
+      name: 'persistence-no-render',
+      severity: 'error',
+      comment: 'FATAL-005 / L1 架构约束 5: persistence 不应被 render 直接 import(应经 bridge)',
+      from: { path: '^src/persistence' },
+      to: { path: '^src/render' }
     }
   ],
   options: {
@@ -33,6 +47,13 @@ export default {
     enhancedResolveOptions: {
       exportsFields: ['exports'],
       conditionNames: ['import', 'require', 'default']
+    },
+    modulesOptions: {
+      listModules: false
+    },
+    parserOptions: {
+      ecmaVersion: 2024,
+      sourceType: 'module'
     }
   }
 };

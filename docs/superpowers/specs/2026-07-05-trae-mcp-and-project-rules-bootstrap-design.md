@@ -1,3 +1,24 @@
+---
+id: trae-mcp-and-project-rules-bootstrap
+title: TRAE MCP 配置对齐 + 项目规则 Bootstrap
+status: base
+phase: implemented           # P2-1: TRAE 配置已实施
+layer: L1-architecture
+scope:
+  global: false
+  modules: []
+  files: [.trae/rules/project_rules.md, scripts/sync-mcp-config.mjs]
+  lines: []
+priority: 80
+created: 2026-07-05
+updated: 2026-07-07
+inherits-from:
+  - geb-infrastructure-bootstrap
+supersedes: []
+non-negotiable:
+  - "TRAE 规则文件 .trae/rules/project_rules.md 必须存在并与项目同步"
+---
+
 # TRAE MCP 配置对齐 + 项目规则 Bootstrap — 设计 Spec
 
 > 由 `2026-07-05-trae-environment-fit-audit.md` §4 推荐触发的整改 spec。

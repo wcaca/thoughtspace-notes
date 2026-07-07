@@ -8,3 +8,12 @@ coverage/
 .vscode/
 dist/
 build/
+.holo-index.json
+# M1+M3+P0 (2026-07-07): 检查工具临时输出文件
+.holo-report.md
+.tsc-coverage.json
+.vitest-result.json
+flag-result.json
+zone-result.json
+.notes-link-graph.json.bak
+DEBUG_NOTES.md

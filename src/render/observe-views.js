@@ -6,6 +6,7 @@
  */
 
 import { describeShape, applyShapeToBar, applyShapeToLabel } from './shape-indicator.js';
+import { isOn as _isFlagOn } from '../runtime/flags/index.js';
 
 let activeOverlay = null;
 let cleanupEsc = null;
@@ -76,7 +77,7 @@ export function showObserveView(mode, thoughts, callbacks = {}) {
   // @note(sp1, decision, why-canvas-mode-orthogonal-to-observe-mode, since:2026-07-07)
   let sp1Host = null;
   try {
-    if (typeof window !== 'undefined' && window.__sp1State) {
+    if (_isFlagOn('observe-mode-cohort-toggle') && typeof window !== 'undefined' && window.__sp1State) {
       sp1Host = window.__sp1State;
       const canvasTabsHost = buildCanvasTabs(sp1Host.getCanvasMode(), (m) => {
         sp1Host.setCanvasMode(m);

@@ -12,12 +12,24 @@
     "check:arch": "node scripts/check-arch.mjs",
     "check:geb": "node scripts/check-geb.mjs",
     "check:notes": "node scripts/check-note-links.mjs",
-    "check:all": "npm run check:arch && npm run check:geb && npm run check:notes && npm test",
+    "check:topology": "node scripts/check-topology.mjs",
+    "check:spec": "node scripts/check-spec-coverage.mjs",
+    "check:spec-topology": "node scripts/check-spec-topology.mjs",
+    "check:flag-topology": "node scripts/check-flag-topology.mjs",
+    "check:non-negotiable": "node scripts/check-non-negotiable.mjs",
+    "check:orphans": "node scripts/check-orphans.mjs",
+    "check:typecheck": "node scripts/check-typecheck.mjs",
+    "check:test-spec-linkage": "node scripts/check-test-spec-linkage.mjs",
+    "check:spec-drift": "node scripts/check-spec-drift.mjs",
+    "check:all": "npm run check:arch && npm run check:geb && npm run check:notes && npm run check:topology && npm run check:spec && npm run check:spec-topology && npm run check:flag-topology && npm run check:non-negotiable && npm run check:orphans && npm run check:typecheck && npm test && npm run check:test-spec-linkage && npm run check:spec-drift",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "geb:bootstrap": "node scripts/bootstrap.mjs",
+    "holo:index": "node scripts/generate-holo-index.mjs",
+    "holo:report": "node scripts/generate-holo-report.mjs",
+    "generate:flag-registry": "node scripts/generate-flag-registry.mjs",
     "postinstall": "node scripts/install-hooks.mjs"
   },
   "devDependencies": {
@@ -25,7 +37,11 @@
     "@vitest/coverage-v8": "^2.0.0",
     "dependency-cruiser": "^16.0.0",
     "eslint": "^9.0.0",
+    "js-yaml": "^5.2.1",
+    "jsdom": "^29.1.1",
+    "madge": "^8.0.0",
     "prettier": "^3.3.0",
+    "typescript": "^6.0.3",
     "vitest": "^2.0.0"
   },
   "engines": {
@@ -38,6 +54,6 @@
     "pixi.js": "^7.4.0",
     "three": "^0.185.1",
     "y-indexeddb": "^9.0.12",
-    "yjs": "^13.6.31"
+    "yjs": "^13.6.30"
   }
 }

@@ -1,3 +1,25 @@
+---
+id: geb-precommit-and-l2-elevation
+title: GEB Pre-commit + L2 升级
+status: base
+phase: implemented           # P2-1: 流程底座已实施稳定
+layer: L1-architecture
+scope:
+  global: false
+  modules: [scripts]
+  files: [scripts/check-arch.mjs, scripts/hooks/pre-commit]
+  lines: []
+priority: 95
+created: 2026-07-05
+updated: 2026-07-07
+inherits-from:
+  - geb-infrastructure-bootstrap
+supersedes: []
+non-negotiable:
+  - "架构守卫必须挂在 git pre-commit hook"
+  - "L2 文档必须有成员清单且与实际一致"
+---
+
 # GEB Pre-commit + L2 升级 — 整改 Spec
 
 > 由 `2026-07-05-comprehensive-audit.md` 触发的派生 spec。

@@ -1,7 +1,31 @@
+---
+id: phase-0-lightweight-restructure
+title: Phase 0 轻量拆分 + Fable5 自推进循环
+status: deprecated
+# P2-1: deprecated 不需要 phase (历史 ADR 残留)
+layer: L1-architecture
+scope:
+  global: true
+  modules: []
+  files: []
+  lines: []
+priority: 0
+created: 2026-07-05
+updated: 2026-07-07
+inherits-from: []
+supersedes: []
+superseded-by: topological-awareness-space
+# P2-1: 移除 conflicts-with — 已被 core-data-model 的 overrides 显式裁决
+# 保留此处仅作为历史 ADR 记录 (P2-3)
+non-negotiable: []
+---
+
 # Phase 0 轻量拆分 + Fable5 自推进循环 — 设计文档
 
 > **For agentic workers:** 这是设计 spec,不是实施 plan。
 > 实施 plan 由 `writing-plans` skill 另行产出,本文件仅供设计审阅。
+
+> ⚠️ **本 spec 已被 `2026-07-05-topological-awareness-space-design.md` 取代**，本文档仅供历史查询。请勿基于本文档做新决策。
 
 | 项目 | 值 |
 |---|---|

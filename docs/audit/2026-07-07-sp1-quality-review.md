@@ -97,4 +97,58 @@
 3. 修 P2 (可选,下次会话)
 ```
 
+---
+
+## §5 亮点(必须保留)
+
+> M3-1 (2026-07-07) 补全:原报告缺本章节,违反 cross-review 方法论 §7 模板要求。
+> 亮点必须明示,避免下次重构误删好的设计决策。
+
+### 5.1 @note 注释时间拓扑门禁(首创)
+- **位置**:scripts/check-note-links.mjs
+- **价值**:把"代码注释 ↔ spec 决策"的关系做成机器可校验的时间拓扑图,不仅查链接存在,还查 `since` 时间戳语义
+- **为什么保留**:这是 GEB 分形文档系统的机器守卫原型,未来 L2/L3 都可复用此模式
+- **示例**:`sp1:pitfall:T1.4-recordOrder-side-effect ← src/core/sort-axis.js:148 (since 2026-07-07)` — 一眼看出哪个代码引用了哪个 spec 决策
+
+### 5.2 agent team 质审查方法论(08-cross-review.md)
+- **位置**:docs/methodology/08-cross-review.md
+- **价值**:把"多视角并行审查"从口号变成可执行流程,有视角选择表、prompt 模板、决策矩阵、报告结构模板
+- **为什么保留**:这是项目级的方法论资产,SP-N 收尾都可复用;跳过它就是"完成感幻觉"
+
+### 5.3 SP-1 spec 二维状态拆分(status + phase)
+- **位置**:P2-1 改造,所有 spec frontmatter
+- **价值**:status(设计凝固度) + phase(实施进度)二维状态机,让"设计已凝固但未实施"(sediment + draft)、"试验中"(focus + experiment)等真实状态可精确表达
+- **为什么保留**:这是化解 spec 矛盾的核心机制,未来 spec 数量增长后价值更大
+
+### 5.4 check-spec-drift 决策漂移检测(P2-4)
+- **位置**:scripts/check-spec-drift.mjs
+- **价值**:把"规范指导试验"从口号变成机器可校验 — spec decisions[].statement 提取 key=value,代码中匹配,locked→FATAL / floating→WARN
+- **为什么保留**:这是 L1-7(spec 算法权威)的真正守卫,比原 grep guard 精确得多
+
+---
+
+## §6 元教训(完成感幻觉)
+
+> M3-1 (2026-07-07) 补全:cross-review 方法论 §7 要求每份 audit 报告暴露"完成感幻觉"。
+
+### 6.1 "门禁全过" ≠ "治理在生效"
+
+SP-1 收尾时 `npm run check:all` 全绿,但审查发现:
+- pre-commit hook 从未安装(13 道门禁物理上从未生效)
+- check-note-links 假设 cwd(从父目录跑直接 crash)
+
+**教训**:"全过"可能是"从未跑过"。门禁必须验证它真的在跑,而不是 exit 0 就放心。
+
+### 6.2 "可复用"是伪命题,直到第二个项目真的复用
+
+methodology/ 8 个文件标"可独立 cp -r",但 6 个有 ../ 硬链接私域。
+
+**教训**:"可复用"承诺必须有第二个项目验证,否则是文档层面的自我欺骗。
+
+### 6.3 亮点不写 = 下次重构会误删
+
+本报告原版缺 §4 亮点章节(违反自己的模板)。如果不补,下次重构可能误删 @note 拓扑门禁或 check-spec-drift 这些好的设计。
+
+**教训**:亮点章节不是装饰,是防止"反向退化"的护城河。
+
 [PROTOCOL]: 变更时更新此头部,然后检查 ../../CLAUDE.md
