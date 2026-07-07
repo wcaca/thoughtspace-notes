@@ -9,6 +9,7 @@ import { readFile, readdir } from 'node:fs/promises';
 import { join, relative, dirname } from 'node:path';
 import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import { execSync } from 'node:child_process';
 
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 
@@ -96,6 +97,67 @@ const srcExists = existsSync(join(ROOT, 'src'));
       }
     } catch (e) {
       violations.push({ severity: 'SEVERE-002', path: 'CLAUDE.md', msg: '读取 CLAUDE.md 失败: ' + e.message });
+    }
+  }
+}
+
+// ============================================================
+// FATAL-005 自检: depcruise 规则名与 L1 架构约束交叉校验
+// ============================================================
+// FATAL-005 自检: depcruise 规则名与 L1 架构约束交叉校验
+{
+  const cruisePath = join(ROOT, 'dependency-cruiser.config.mjs');
+  const rootClaudePath = join(ROOT, 'CLAUDE.md');
+  if (existsSync(cruisePath) && existsSync(rootClaudePath)) {
+    try {
+      // SubTask 2.1: dynamic import 读取 dependency-cruiser.config.mjs,提取所有规则 name 与 comment
+      const cfgUrl = new URL(`file:///${cruisePath.replace(/\\/g, '/')}`).href;
+      const { default: cruiseCfg } = await import(cfgUrl);
+      const rules = (cruiseCfg.forbidden || []).map((r) => ({
+        name: r.name,
+        comment: r.comment || ''
+      }));
+
+      // SubTask 2.2: 读 CLAUDE.md,提取 §ARCHITECTURE 段声明的约束
+      const content = await readFile(rootClaudePath, 'utf8');
+      const m = content.match(/### 不可违反的架构约束[\s\S]*?(?=\n### |\n## |$)/);
+      if (m) {
+        const block = m[0];
+
+        // 从 L1 提取所有 depcruise 规则引用:ruleName → [L1-N] 编号
+        const l1DepRules = new Map();
+        const depRuleRegex = /\[L1-(\d+)\][^\n]*?depcruise\s*规则[:：]\s*`?([a-z-]+)`?/g;
+        let depMatch;
+        while ((depMatch = depRuleRegex.exec(block)) !== null) {
+          l1DepRules.set(depMatch[2], depMatch[1]);
+        }
+
+        // SubTask 2.3 比对 1: depcruise config 中每条规则的 comment 应引用 L1 架构约束编号
+        for (const rule of rules) {
+          const cmtMatch = rule.comment.match(/L1\s*架构约束\s*(\d+)/);
+          if (!cmtMatch) {
+            violations.push({
+              severity: 'SEVERE-005',
+              path: 'dependency-cruiser.config.mjs',
+              msg: `FATAL-005 自检: 规则 "${rule.name}" 的 comment 未引用任何 L1 架构约束编号`
+            });
+          }
+        }
+
+        // SubTask 2.3 比对 2: L1 声明的 depcruise 规则应在 config 中存在对应规则
+        const cfgRuleNames = new Set(rules.map((r) => r.name));
+        for (const [ruleName, l1Id] of l1DepRules) {
+          if (!cfgRuleNames.has(ruleName)) {
+            violations.push({
+              severity: 'SEVERE-005',
+              path: 'dependency-cruiser.config.mjs',
+              msg: `FATAL-005 自检: L1-${l1Id} 声明 depcruise 规则 "${ruleName}",但 config 中无对应规则`
+            });
+          }
+        }
+      }
+    } catch {
+      // dependency-cruiser.config.mjs 无法读取或解析 → graceful 跳过,不阻塞
     }
   }
 }
@@ -208,6 +270,109 @@ if (srcExists) {
       }
     } catch (e) {
       violations.push({ severity: 'SEVERE-002', path: sd + '/CLAUDE.md', msg: '读取 CLAUDE.md 失败' });
+    }
+  }
+}
+
+// ============================================================
+// FATAL-001: 孤立代码变更检测(改代码不改 L3/L2)
+// ============================================================
+// FATAL-001: 孤立代码变更检测
+{
+  let changedEntries = null;
+  try {
+    // 用 git diff --name-status HEAD 同时获取状态码与路径(A/M/D)
+    const out = execSync('git diff --name-status HEAD', {
+      cwd: ROOT,
+      encoding: 'utf8',
+      stdio: ['pipe', 'pipe', 'ignore']
+    });
+    changedEntries = out
+      .split('\n')
+      .map((l) => l.trim())
+      .filter(Boolean)
+      .map((l) => {
+        const parts = l.split('\t');
+        return { status: parts[0] || '', path: parts[1] || '' };
+      });
+  } catch {
+    // git 不可用 / 非 git 仓库 / 无 HEAD → graceful 跳过,不阻塞
+    changedEntries = null;
+  }
+
+  if (changedEntries) {
+    const changedPathSet = new Set(changedEntries.map((c) => c.path));
+
+    for (const c of changedEntries) {
+      const p = c.path;
+      // 仅检查 src/**/*.js,排除 .test.js
+      if (!p.startsWith('src/')) continue;
+      if (!p.endsWith('.js')) continue;
+      if (p.endsWith('.test.js')) continue;
+
+      if (c.status === 'M') {
+        // SubTask 1.2: 修改文件 — 检查 L3 头部是否同步更新
+        let diff = '';
+        try {
+          diff = execSync(`git diff HEAD -- ${JSON.stringify(p)}`, {
+            cwd: ROOT,
+            encoding: 'utf8',
+            stdio: ['pipe', 'pipe', 'ignore']
+          });
+        } catch {
+          continue;
+        }
+        if (!diff) continue;
+
+        // 统计变更行数(以 + 或 - 开头,排除 +++/--- 头与纯空行)
+        const diffLines = diff.split('\n');
+        let changedLines = 0;
+        for (const line of diffLines) {
+          if (/^\+(?!\+\+)/.test(line) || /^-(?!--)/.test(line)) {
+            if (line.slice(1).trim() !== '') changedLines++;
+          }
+        }
+        if (changedLines < 3) continue;
+
+        // 读前 500 字符,确认 L3 头部存在(若缺失则由 FATAL-002 处理)
+        const absPath = join(ROOT, ...p.split('/'));
+        let head = '';
+        try {
+          head = (await readFile(absPath, 'utf8')).slice(0, 500);
+        } catch {
+          continue;
+        }
+        const hasL3 = ['[INPUT]:', '[OUTPUT]:', '[POS]:', '[PROTOCOL]:'].every((s) =>
+          head.includes(s)
+        );
+        if (!hasL3) continue;
+
+        // 检查 L3 头部是否在 diff 中被修改
+        const headerModified = diffLines.some(
+          (line) =>
+            (/^\+(?!\+\+)/.test(line) || /^-(?!--)/.test(line)) &&
+            /\[(INPUT|OUTPUT|POS|PROTOCOL)\]:/.test(line)
+        );
+        if (!headerModified) {
+          violations.push({
+            severity: 'FATAL-001',
+            path: p,
+            msg: `孤立代码变更: ${p} 改了代码但未同步 L3 头部`
+          });
+        }
+      } else if (c.status === 'A' || c.status === 'D') {
+        // SubTask 1.3: 新增/删除文件 — 检查所在目录的 CLAUDE.md 是否在变更列表中
+        const slashIdx = p.lastIndexOf('/');
+        const dir = slashIdx > 0 ? p.substring(0, slashIdx) : '';
+        const claudeRel = dir ? `${dir}/CLAUDE.md` : 'CLAUDE.md';
+        if (!changedPathSet.has(claudeRel)) {
+          violations.push({
+            severity: 'FATAL-004',
+            path: p,
+            msg: `孤立 ${c.status === 'A' ? '新增' : '删除'}: ${p} 但 ${claudeRel} 未同步更新`
+          });
+        }
+      }
     }
   }
 }

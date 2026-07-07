@@ -1,36 +1,16 @@
 /**
  * [INPUT]: zoneStore / zoneMesh / thoughtById / callbacks
  * [OUTPUT]: showZonePanel({ zoneStore, zoneMesh, thoughtById, callbacks }) → DOM; hideZonePanel(); isZonePanelOpen()
- * [POS]: src/render/zone-panel.js — 分区管理面板;列表 / 新建 / 编辑 / 删除 / 跳转
+ * [POS]: src/render/zone-panel.js — 分区管理面板;列表渲染 + 入口 + 弹出 / 关闭;表单逻辑委托 zone-form.js
  * [PROTOCOL]: 变更时更新此头部,然后检查 ../CLAUDE.md
  */
 
-const PRESET_COLORS = [
-  '#7fe0c9', '#e8a865', '#e87aa8', '#9b8cf2', '#7fb6e8',
-  '#a3e87f', '#e8e87f', '#e87f7f', '#c47fe8', '#7fe8e0'
-];
-
-const PRESET_SIZES = [
-  { label: '小(80)', radius: 80 },
-  { label: '中(150)', radius: 150 },
-  { label: '大(240)', radius: 240 },
-  { label: '超大(400)', radius: 400 }
-];
+import { createZoneForm } from './zone-form.js';
 
 let activePanel = null;
 let cleanupEsc = null;
 
-/**
- * @typedef {Object} ZoneCallbacks
- * @property {(zone: any) => void} [onCreate]
- * @property {() => void} [onChange]
- * @property {(id: string, patch: any) => void} [onUpdate]
- * @property {(id: string) => void} [onRemove]
- * @property {(id: string) => void} [onJump]
- * @property {() => any[]} [getSelectedThoughts]
- */
-
-/** @param {{zoneStore: any, zoneMesh: any, thoughtById: any, callbacks?: ZoneCallbacks}} [opts] */
+// callbacks 形状详见 zone-form.js 的 ZoneCallbacks typedef;此处仅转发给 createZoneForm。
 export function showZonePanel({ zoneStore, zoneMesh, thoughtById, callbacks = {} } = {}) {
   if (activePanel) hideZonePanel();
 
@@ -40,27 +20,19 @@ export function showZonePanel({ zoneStore, zoneMesh, thoughtById, callbacks = {}
   root.setAttribute('aria-label', '自定义分区');
 
   Object.assign(root.style, {
-    position: 'fixed',
-    zIndex: '120',
-    left: '50%',
-    top: '50%',
+    position: 'fixed', zIndex: '120',
+    left: '50%', top: '50%',
     transform: 'translate(-50%, -50%) translateY(8px) scale(0.96)',
-    width: '520px',
-    maxHeight: '80vh',
-    display: 'flex',
-    flexDirection: 'column',
+    width: '520px', maxHeight: '80vh',
+    display: 'flex', flexDirection: 'column',
     background: 'linear-gradient(160deg, rgba(22, 28, 56, 0.92) 0%, rgba(14, 18, 36, 0.94) 100%)',
     backdropFilter: 'blur(24px) saturate(180%)',
     WebkitBackdropFilter: 'blur(24px) saturate(180%)',
-    borderRadius: '16px',
-    border: '1px solid rgba(127, 224, 201, 0.25)',
-    color: '#e9e7f4',
-    fontFamily: '"PingFang SC", "Microsoft YaHei", sans-serif',
-    fontSize: '13px',
+    borderRadius: '16px', border: '1px solid rgba(127, 224, 201, 0.25)',
+    color: '#e9e7f4', fontFamily: '"PingFang SC", "Microsoft YaHei", sans-serif', fontSize: '13px',
     boxShadow: '0 20px 56px rgba(0,0,0,0.65), 0 0 80px rgba(127,224,201,0.15), inset 0 1px 0 rgba(255,255,255,0.06)',
-    opacity: '0',
-    transition: 'opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1), transform 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
-    overflow: 'hidden'
+    opacity: '0', overflow: 'hidden',
+    transition: 'opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1), transform 0.25s cubic-bezier(0.16, 1, 0.3, 1)'
   });
 
   // 头部
@@ -179,120 +151,21 @@ export function showZonePanel({ zoneStore, zoneMesh, thoughtById, callbacks = {}
   });
   root.appendChild(content);
 
-  // 新建表单
+  // 新建表单标题
   const formTitle = document.createElement('div');
   formTitle.className = 'zp-section-title';
   formTitle.textContent = '+ 新建分区';
   content.appendChild(formTitle);
 
-  const form = document.createElement('div');
-  form.className = 'zp-form';
-
-  // name row
-  const nameRow = document.createElement('div');
-  nameRow.className = 'zp-form-row';
-  const nameLabel = document.createElement('div');
-  nameLabel.className = 'zp-label';
-  nameLabel.textContent = '名称';
-  const nameInput = document.createElement('input');
-  nameInput.className = 'zp-input';
-  nameInput.type = 'text';
-  nameInput.placeholder = '如:工作 / 灵感 / 情感';
-  nameInput.maxLength = 24;
-  nameRow.appendChild(nameLabel);
-  nameRow.appendChild(nameInput);
-  form.appendChild(nameRow);
-
-  // color row
-  const colorRow = document.createElement('div');
-  colorRow.className = 'zp-form-row';
-  const colorLabel = document.createElement('div');
-  colorLabel.className = 'zp-label';
-  colorLabel.textContent = '颜色';
-  const colorSwatches = document.createElement('div');
-  colorSwatches.className = 'zp-color-row';
-  let selectedColor = PRESET_COLORS[0];
-  for (const c of PRESET_COLORS) {
-    const sw = document.createElement('button');
-    sw.className = 'zp-color-swatch';
-    sw.style.background = c;
-    sw.style.color = c;
-    sw.title = c;
-    if (c === selectedColor) sw.classList.add('is-on');
-    sw.addEventListener('click', () => {
-      selectedColor = c;
-      colorSwatches.querySelectorAll('.zp-color-swatch').forEach((x) => x.classList.remove('is-on'));
-      sw.classList.add('is-on');
-    });
-    colorSwatches.appendChild(sw);
-  }
-  colorRow.appendChild(colorLabel);
-  colorRow.appendChild(colorSwatches);
-  form.appendChild(colorRow);
-
-  // size + center row
-  const sizeRow = document.createElement('div');
-  sizeRow.className = 'zp-form-row';
-  const sizeLabel = document.createElement('div');
-  sizeLabel.className = 'zp-label';
-  sizeLabel.textContent = '半径';
-  const sizeSelect = document.createElement('select');
-  sizeSelect.className = 'zp-select';
-  for (const p of PRESET_SIZES) {
-    const opt = document.createElement('option');
-    opt.value = String(p.radius);
-    opt.textContent = p.label;
-    sizeSelect.appendChild(opt);
-  }
-  sizeSelect.value = String(150);
-  sizeRow.appendChild(sizeLabel);
-  sizeRow.appendChild(sizeSelect);
-  form.appendChild(sizeRow);
-
-  // description row
-  const descRow = document.createElement('div');
-  descRow.className = 'zp-form-row';
-  const descLabel = document.createElement('div');
-  descLabel.className = 'zp-label';
-  descLabel.textContent = '备注';
-  const descInput = document.createElement('input');
-  descInput.className = 'zp-input';
-  descInput.type = 'text';
-  descInput.placeholder = '可选 · 描述分区用途';
-  descInput.maxLength = 50;
-  descRow.appendChild(descLabel);
-  descRow.appendChild(descInput);
-  form.appendChild(descRow);
-
-  // actions
-  const formActions = document.createElement('div');
-  formActions.className = 'zp-form-actions';
-  const createBtn = document.createElement('button');
-  createBtn.className = 'zp-btn zp-btn-primary';
-  createBtn.textContent = '在原点创建';
-  const cancelBtn = document.createElement('button');
-  cancelBtn.className = 'zp-btn zp-btn-secondary';
-  cancelBtn.textContent = '在选中念头附近';
-  formActions.appendChild(createBtn);
-  formActions.appendChild(cancelBtn);
-  form.appendChild(formActions);
-  content.appendChild(form);
-
-  // hint
-  const hint = document.createElement('div');
-  hint.className = 'zp-hint';
-  hint.textContent = '💡 提示:分区是 3D 球体,中心位置 / 半径可任意设;念头按"距离最近且包含在内"自动归入';
-  content.appendChild(hint);
-
-  // 列表标题
+  // 列表标题 + 容器(先创建以便 renderList 闭包引用)
   const listTitle = document.createElement('div');
   listTitle.className = 'zp-section-title';
   listTitle.textContent = '现有分区';
-  content.appendChild(listTitle);
-
   const list = document.createElement('div');
   list.className = 'zp-list';
-  content.appendChild(list);
+
+  // formCtl 在 renderList 首次调用前赋值;renderList 通过闭包读取
+  let formCtl;
 
   function renderList() {
     list.innerHTML = '';
@@ -333,7 +206,7 @@ export function showZonePanel({ zoneStore, zoneMesh, thoughtById, callbacks = {}
         if (callbacks.onJump) callbacks.onJump(zone);
         hideZonePanel();
       });
-      const editBtn = iconBtn('✎', '编辑', () => openEditForm(zone));
+      const editBtn = iconBtn('✎', '编辑', () => formCtl.startEdit(zone));
       const delBtn = iconBtn('×', '删除', 'danger', () => {
         if (callbacks.onRemove) callbacks.onRemove(zone);
         else zoneStore.remove(zone.id);
@@ -369,107 +242,18 @@ export function showZonePanel({ zoneStore, zoneMesh, thoughtById, callbacks = {}
     return b;
   }
 
-  function openEditForm(zone) {
-    nameInput.value = zone.name;
-    descInput.value = zone.description || '';
-    sizeSelect.value = String(zone.radius);
-    selectedColor = zone.color;
-    colorSwatches.querySelectorAll('.zp-color-swatch').forEach((x) => {
-      x.classList.toggle('is-on', /** @type {HTMLElement} */(x).style.background === selectedColor || x.getAttribute('title') === selectedColor);
-    });
-    createBtn.textContent = '保存修改';
-    cancelBtn.textContent = '取消编辑';
-    let editing = true;
-    let originalId = zone.id;
+  // 表单逻辑委托 zone-form.js
+  formCtl = createZoneForm({ zoneStore, zoneMesh, thoughtById, callbacks, onRenderList: renderList });
+  content.appendChild(formCtl.el);
 
-    function cleanup() {
-      createBtn.removeEventListener('click', onSave);
-      cancelBtn.removeEventListener('click', onCancel);
-      createBtn.textContent = '在原点创建';
-      cancelBtn.textContent = '在选中念头附近';
-      editing = false;
-    }
-    function onSave() {
-      const patch = {
-        name: nameInput.value.trim() || zone.name,
-        color: selectedColor,
-        radius: parseInt(sizeSelect.value, 10),
-        description: descInput.value.trim()
-      };
-      if (callbacks.onUpdate) callbacks.onUpdate(originalId, patch);
-      else zoneStore.update(originalId, patch);
-      zoneMesh.updateZone(zoneStore.get(originalId));
-      if (callbacks.onChange) callbacks.onChange();
-      // 重置表单
-      nameInput.value = ''; descInput.value = ''; sizeSelect.value = '150';
-      selectedColor = PRESET_COLORS[0];
-      colorSwatches.querySelectorAll('.zp-color-swatch').forEach((x, i) => x.classList.toggle('is-on', i === 0));
-      cleanup();
-      renderList();
-    }
-    function onCancel() {
-      nameInput.value = ''; descInput.value = ''; sizeSelect.value = '150';
-      selectedColor = PRESET_COLORS[0];
-      colorSwatches.querySelectorAll('.zp-color-swatch').forEach((x, i) => x.classList.toggle('is-on', i === 0));
-      cleanup();
-    }
-    createBtn.addEventListener('click', onSave);
-    cancelBtn.addEventListener('click', onCancel);
-  }
+  // hint
+  const hint = document.createElement('div');
+  hint.className = 'zp-hint';
+  hint.textContent = '💡 提示:分区是 3D 球体,中心位置 / 半径可任意设;念头按"距离最近且包含在内"自动归入';
+  content.appendChild(hint);
 
-  // 创建按钮处理
-  createBtn.addEventListener('click', () => {
-    const name = nameInput.value.trim();
-    if (!name) {
-      nameInput.focus();
-      nameInput.style.borderColor = 'rgba(232,122,168,0.6)';
-      setTimeout(() => { nameInput.style.borderColor = ''; }, 1200);
-      return;
-    }
-    const zone = zoneStore.add({
-      name,
-      color: selectedColor,
-      center: { x: 0, y: 0, z: 0 },
-      radius: parseInt(sizeSelect.value, 10),
-      description: descInput.value.trim()
-    });
-    if (callbacks.onCreate) callbacks.onCreate(zone);
-    zoneMesh.updateZone(zone);
-    if (callbacks.onChange) callbacks.onChange();
-    nameInput.value = ''; descInput.value = ''; sizeSelect.value = '150';
-    selectedColor = PRESET_COLORS[0];
-    colorSwatches.querySelectorAll('.zp-color-swatch').forEach((x, i) => x.classList.toggle('is-on', i === 0));
-    renderList();
-  });
-
-  cancelBtn.addEventListener('click', () => {
-    const selected = callbacks.getSelectedThoughts ? callbacks.getSelectedThoughts() : [];
-    const name = nameInput.value.trim() || `分区 ${zoneStore.size() + 1}`;
-    let center = { x: 0, y: 0, z: 0 };
-    if (selected.length > 0) {
-      const cx = selected.reduce((s, t) => ({ x: s.x + (t.x || 0), y: s.y + (t.y || 0), z: s.z + (t.z || 0) }), { x: 0, y: 0, z: 0 });
-      center = { x: cx.x / selected.length, y: cx.y / selected.length, z: cx.z / selected.length };
-    } else {
-      // 用所有念头中心
-      if (thoughtById.size > 0) {
-        const cx = Array.from(thoughtById.values()).reduce((s, t) => ({ x: s.x + (t.x || 0), y: s.y + (t.y || 0), z: s.z + (t.z || 0) }), { x: 0, y: 0, z: 0 });
-        center = { x: cx.x / thoughtById.size, y: cx.y / thoughtById.size, z: cx.z / thoughtById.size };
-      }
-    }
-    const zone = zoneStore.add({
-      name,
-      color: selectedColor,
-      center,
-      radius: parseInt(sizeSelect.value, 10),
-      description: descInput.value.trim()
-    });
-    if (callbacks.onCreate) callbacks.onCreate(zone);
-    zoneMesh.updateZone(zone);
-    if (callbacks.onChange) callbacks.onChange();
-    selectedColor = PRESET_COLORS[0];
-    colorSwatches.querySelectorAll('.zp-color-swatch').forEach((x, i) => x.classList.toggle('is-on', i === 0));
-    renderList();
-  });
+  content.appendChild(listTitle);
+  content.appendChild(list);
 
   close.addEventListener('click', hideZonePanel);
   cleanupEsc = (e) => { if (e.key === 'Escape') hideZonePanel(); };

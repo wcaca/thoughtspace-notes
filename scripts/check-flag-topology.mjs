@@ -112,6 +112,11 @@ async function main() {
       if (total !== 100) {
         v('WARN', 'W5', flag._spec_file, `flag "${name}" cohort.weights 总和 ${total} ≠ 100`);
       }
+      // P2: rollout vs cohort 逻辑矛盾检测
+      // rollout=0 意味着没人进入实验,cohort weights 100% 无意义 — 要么 rollout>0,要么删 cohort
+      if (flag.rollout === 0 && total === 100) {
+        v('WARN', 'W6', flag._spec_file, `flag "${name}" rollout=0 但 cohort.weights 总和=100 — 逻辑矛盾(rollout=0 时无人进入 cohort,weights 无意义)。建议:要么 rollout>0,要么删除 cohort 字段`);
+      }
     }
     if (flag.status === 'experimental') {
       const since = new Date(flag.since || '2026-07-07').getTime();

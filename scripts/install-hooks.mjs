@@ -12,7 +12,7 @@
  *  - M1-1 盲点: 修改了 scripts/hooks/pre-commit 跑 check:all,但没安装,.git/hooks/pre-commit 仍是旧版(只跑 4 道)
  */
 
-import { copyFileSync, chmodSync, existsSync, mkdirSync } from 'node:fs';
+import { copyFileSync, chmodSync, existsSync, mkdirSync, statSync, utimesSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -33,10 +33,45 @@ if (!existsSync(gitHooksDir)) {
 }
 
 try {
+  // 比较 SOURCE 与 TARGET 的 mtime,提示安装/更新/已最新
+  let sourceStat;
+  try {
+    sourceStat = statSync(SOURCE);
+  } catch {
+    // SOURCE 存在性已在上面校验,此处不会到达
+    sourceStat = null;
+  }
+
+  let targetMtime = null;
+  try {
+    targetMtime = statSync(TARGET).mtimeMs;
+  } catch {
+    // TARGET 不存在,首次安装
+  }
+
+  const sourceMtime = sourceStat ? sourceStat.mtimeMs : null;
+  const EPSILON = 1; // 1ms 容差,吸收文件系统 mtime 精度差异
+
+  if (targetMtime === null) {
+    console.log('→ 安装 pre-commit hook');
+  } else if (Math.abs(sourceMtime - targetMtime) < EPSILON) {
+    console.log('✓ hooks 已最新');
+  } else if (sourceMtime > targetMtime) {
+    console.log('→ hooks 已更新(SOURCE 比 .git/hooks 新)');
+  } else {
+    console.log('⚠ hooks 比 SOURCE 新(可能被手动修改),已覆盖为 SOURCE 版本');
+  }
+
   copyFileSync(SOURCE, TARGET);
   chmodSync(TARGET, 0o755);
-  console.log(`✓ pre-commit hook 已安装: ${SOURCE} → ${TARGET}`);
-  console.log('  下次 git commit 将自动跑 check:all (13 道门禁)');
+  // 同步 TARGET 的 mtime 到 SOURCE,保证下次 install 能正确判断"已最新"
+  if (sourceStat) {
+    try {
+      utimesSync(TARGET, sourceStat.atime, sourceStat.mtime);
+    } catch {
+      // utimes 失败不影响安装主流程
+    }
+  }
 } catch (err) {
   console.error(`✗ 安装失败: ${err.message}`);
   process.exit(1);

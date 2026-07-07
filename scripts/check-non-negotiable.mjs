@@ -181,6 +181,37 @@ const GUARDS = [
       }
       return violations;
     }
+  },
+  // M1-5 (2026-07-07): L1-9 数值化等级 FATAL 守卫 — 对应 CLAUDE.md L1-MANIFEST L1-9
+  // 产品灵魂:不做数值化等级/积分。src/core/**/*.js 禁止用户成长体系字段作为标识符使用
+  // 检测:userLevel / userExp / expPoints / gradeTier / levelPoints / userRank
+  // 注:剔除字符串字面量与注释后再匹配,避免误报字符串值
+  {
+    specId: 'product-soul-no-gamification',
+    standalone: true,
+    keywords: ['数值化', '等级', '积分'],
+    guard: (allCode) => {
+      const violations = [];
+      const GAMIFICATION_RE = /\b(userLevel|userExp|expPoints|gradeTier|levelPoints|userRank)\b/;
+      for (const [f, text] of allCode) {
+        if (!/src[/\\]core[/\\].*\.js$/.test(f)) continue;
+        // 剔除块注释 / 行注释 / 字符串字面量,只检测标识符使用
+        const stripped = text
+          .replace(/\/\*[\s\S]*?\*\//g, '')
+          .replace(/\/\/[^\n]*/g, '')
+          .replace(/'(?:\\.|[^'\\])*'/g, "''")
+          .replace(/"(?:\\.|[^"\\])*"/g, '""')
+          .replace(/`(?:\\.|[^`\\])*`/g, '``');
+        const m = stripped.match(GAMIFICATION_RE);
+        if (m) {
+          violations.push({
+            file: relative(ROOT, f),
+            msg: `产品灵魂违反 L1-9: src/core/ 禁止用户成长体系字段 ${m[1]}`
+          });
+        }
+      }
+      return violations;
+    }
   }
 ];
 
@@ -196,6 +227,20 @@ async function main() {
   }
 
   const violations = [];
+
+  // 先执行 standalone GUARD(不依赖 spec 文件匹配,直接对 allCode 检测)
+  for (const guard of GUARDS) {
+    if (!guard.standalone) continue;
+    const result = guard.guard(allCode);
+    for (const v of result) {
+      violations.push({
+        severity: 'FATAL-010',
+        path: v.file,
+        msg: `[${guard.specId}] non-negotiable 违反: ${v.msg}`
+      });
+    }
+  }
+
   for (const f of specFiles) {
     const meta = parseFrontmatter((await readFile(join(specsDir, f), 'utf8')));
     if (!meta || !Array.isArray(meta['non-negotiable'])) continue;

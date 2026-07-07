@@ -1,19 +1,79 @@
 {
-  "generatedAt": "2026-07-07T06:52:37.652Z",
+  "generatedAt": "2026-07-07T11:06:12.939Z",
   "stats": {
-    "totalLinks": 10,
-    "uniqueAnchors": 9,
-    "filesWithNotes": 4,
+    "totalLinks": 16,
+    "uniqueAnchors": 15,
+    "filesWithNotes": 6,
     "errors": 0,
     "warnings": 0
   },
   "forward": {
+    "src\\bootstrap.js": [
+      {
+        "subProject": "sp1",
+        "type": "pitfall",
+        "anchor": "T1.4-no-bootstrap",
+        "line": 29,
+        "since": "2026-07-07"
+      },
+      {
+        "subProject": "sp1",
+        "type": "decision",
+        "anchor": "why-window-globals",
+        "line": 32,
+        "since": "2026-07-07"
+      }
+    ],
     "src\\core\\layer-store.js": [
       {
         "subProject": "sp1",
         "type": "pitfall",
         "anchor": "T1.5-json-undefined-side-effect",
         "line": 143,
+        "since": "2026-07-07"
+      }
+    ],
+    "src\\core\\shape-resolver.js": [
+      {
+        "subProject": "shape",
+        "type": "decision",
+        "anchor": "why-individuality-not-wholesomeness",
+        "line": 19,
+        "since": "2026-07-07"
+      },
+      {
+        "subProject": "shape",
+        "type": "pitfall",
+        "anchor": "T10-bug1-empty-state-misjudged",
+        "line": 22,
+        "since": "2026-07-07"
+      },
+      {
+        "subProject": "shape",
+        "type": "decision",
+        "anchor": "why-default-weights-0.6-0.25-0.15",
+        "line": 54,
+        "since": "2026-07-07"
+      },
+      {
+        "subProject": "shape",
+        "type": "integration",
+        "anchor": "flag-resolver-injection",
+        "line": 109,
+        "since": "2026-07-07"
+      },
+      {
+        "subProject": "shape",
+        "type": "pitfall",
+        "anchor": "flag-resolver-silent-catch",
+        "line": 123,
+        "since": "2026-07-07"
+      },
+      {
+        "subProject": "shape",
+        "type": "data-flow",
+        "anchor": "resolve-pipeline",
+        "line": 130,
         "since": "2026-07-07"
       }
     ],
@@ -33,19 +93,12 @@
         "since": "2026-07-07"
       }
     ],
-    "src\\main.js": [
-      {
-        "subProject": "sp1",
-        "type": "pitfall",
-        "anchor": "T1.4-no-bootstrap",
-        "line": 32,
-        "since": "2026-07-07"
-      },
+    "src\\render\\observe-state.js": [
       {
         "subProject": "sp1",
         "type": "decision",
-        "anchor": "why-window-globals",
-        "line": 35,
+        "anchor": "why-no-layer-in-background-mode-yet",
+        "line": 158,
         "since": "2026-07-07"
       }
     ],
@@ -54,44 +107,93 @@
         "subProject": "sp1",
         "type": "pitfall",
         "anchor": "T1.4-recordOrder-side-effect",
-        "line": 26,
+        "line": 24,
         "since": "2026-07-07"
       },
       {
         "subProject": "sp1",
         "type": "integration",
         "anchor": "observe-views",
-        "line": 75,
+        "line": 79,
         "since": "2026-07-07"
       },
       {
         "subProject": "sp1",
         "type": "decision",
         "anchor": "why-canvas-mode-orthogonal-to-observe-mode",
-        "line": 77,
+        "line": 81,
         "since": "2026-07-07"
       },
       {
         "subProject": "sp1",
         "type": "pitfall",
         "anchor": "T2.1-ob-content-not-yet-attached",
-        "line": 140,
-        "since": "2026-07-07"
-      },
-      {
-        "subProject": "sp1",
-        "type": "decision",
-        "anchor": "why-no-layer-in-background-mode-yet",
-        "line": 363,
+        "line": 136,
         "since": "2026-07-07"
       }
     ]
   },
   "reverse": {
+    "sp1:pitfall:T1.4-no-bootstrap": [
+      {
+        "file": "src\\bootstrap.js",
+        "line": 29,
+        "since": "2026-07-07"
+      }
+    ],
+    "sp1:decision:why-window-globals": [
+      {
+        "file": "src\\bootstrap.js",
+        "line": 32,
+        "since": "2026-07-07"
+      }
+    ],
     "sp1:pitfall:T1.5-json-undefined-side-effect": [
       {
         "file": "src\\core\\layer-store.js",
         "line": 143,
+        "since": "2026-07-07"
+      }
+    ],
+    "shape:decision:why-individuality-not-wholesomeness": [
+      {
+        "file": "src\\core\\shape-resolver.js",
+        "line": 19,
+        "since": "2026-07-07"
+      }
+    ],
+    "shape:pitfall:T10-bug1-empty-state-misjudged": [
+      {
+        "file": "src\\core\\shape-resolver.js",
+        "line": 22,
+        "since": "2026-07-07"
+      }
+    ],
+    "shape:decision:why-default-weights-0.6-0.25-0.15": [
+      {
+        "file": "src\\core\\shape-resolver.js",
+        "line": 54,
+        "since": "2026-07-07"
+      }
+    ],
+    "shape:integration:flag-resolver-injection": [
+      {
+        "file": "src\\core\\shape-resolver.js",
+        "line": 109,
+        "since": "2026-07-07"
+      }
+    ],
+    "shape:pitfall:flag-resolver-silent-catch": [
+      {
+        "file": "src\\core\\shape-resolver.js",
+        "line": 123,
+        "since": "2026-07-07"
+      }
+    ],
+    "shape:data-flow:resolve-pipeline": [
+      {
+        "file": "src\\core\\shape-resolver.js",
+        "line": 130,
         "since": "2026-07-07"
       }
     ],
@@ -103,7 +205,7 @@
       },
       {
         "file": "src\\render\\observe-views.js",
-        "line": 26,
+        "line": 24,
         "since": "2026-07-07"
       }
     ],
@@ -114,45 +216,31 @@
         "since": "2026-07-07"
       }
     ],
-    "sp1:pitfall:T1.4-no-bootstrap": [
+    "sp1:decision:why-no-layer-in-background-mode-yet": [
       {
-        "file": "src\\main.js",
-        "line": 32,
-        "since": "2026-07-07"
-      }
-    ],
-    "sp1:decision:why-window-globals": [
-      {
-        "file": "src\\main.js",
-        "line": 35,
+        "file": "src\\render\\observe-state.js",
+        "line": 158,
         "since": "2026-07-07"
       }
     ],
     "sp1:integration:observe-views": [
       {
         "file": "src\\render\\observe-views.js",
-        "line": 75,
+        "line": 79,
         "since": "2026-07-07"
       }
     ],
     "sp1:decision:why-canvas-mode-orthogonal-to-observe-mode": [
       {
         "file": "src\\render\\observe-views.js",
-        "line": 77,
+        "line": 81,
         "since": "2026-07-07"
       }
     ],
     "sp1:pitfall:T2.1-ob-content-not-yet-attached": [
       {
         "file": "src\\render\\observe-views.js",
-        "line": 140,
-        "since": "2026-07-07"
-      }
-    ],
-    "sp1:decision:why-no-layer-in-background-mode-yet": [
-      {
-        "file": "src\\render\\observe-views.js",
-        "line": 363,
+        "line": 136,
         "since": "2026-07-07"
       }
     ]

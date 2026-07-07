@@ -4,7 +4,7 @@
 ## 成员清单
 
 ### 核心实体（念头/连接/结构）
-- `thought.js`: 念头数据创建 / 温度衰减 / 标签管理 / 新建念头工厂，纯函数
+- `thought.js`: 念头数据创建 / 温度衰减 / 标签管理 / 新建念头工厂（含 source 来源锚定: manual/voice/import/copilot-suggest），纯函数
 - `edge.js`: 边的 CRUD / 5 种关系类型 / `createEdgeStore` 内存存储
 - `structure.js`: 结构内聚度评分 / 结晶判定（对应 phase-0 spec 公式）
 - `geometry-cluster.js`: G2 星团布局引擎（d3-force 力导向）

@@ -131,6 +131,7 @@
 | `scene.js` | 🔵 沉淀 | Three.js 场景 | - | 已稳定 |
 | `thought-sphere.js` | 🔵 沉淀 | 念头球体 3D | - | 已稳定 |
 | `hull-mesh.js` | 🔵 沉淀 | 凸包网格 | - | 已稳定 |
+| `instanced-thoughts.js` | 🔵 沉淀 | 念头实例化渲染 | - | 已稳定 |
 | `zone-mesh.js` | 🔵 沉淀 | 分区 3D 可视化 | - | 已稳定 |
 | `sediment-layer.js` | 🔵 沉淀 | 沉积层 | - | 已稳定 |
 | `crystallize-fx.js` | 🔵 沉淀 | 结晶特效 | - | 已稳定 |
@@ -143,15 +144,20 @@
 | `panel-stack.js` | 🟢 底座 | 单开面板协调器 | 6 | 不可变 schema |
 | `overlay-panel.js` | 🔵 沉淀 | 浮动面板基类 | - | 已稳定 |
 | `outside-click.js` | 🔵 沉淀 | 空白点击关闭 | - | 已稳定 |
-| `detail-panel.js` | 🔵 沉淀 | 念头详情面板 | - | 已稳定 |
+| `detail-panel.js` | 🔵 沉淀 | 念头详情面板 | - | 已稳定,拆分后保留面板结构+字段编辑 |
+| `detail-markdown.js` | 🔵 沉淀 | 念详情 markdown 渲染 | - | 拆分自 detail-panel.js,markdownToHtml+正文编辑器 |
 | `edge-panel.js` | 🔵 沉淀 | 边编辑面板 | - | 已稳定 |
 | `crystal-panel.js` | 🔵 沉淀 | 结晶入口面板 | - | 已稳定 |
 | `action-panel.js` | 🔵 沉淀 | 行动萃取面板 | - | 已稳定 |
-| `copilot-panel.js` | 🔵 沉淀 | 灵感助手面板 | - | 已稳定 |
-| `zone-panel.js` | 🔵 沉淀 | 分区管理面板 | - | 已稳定 |
+| `copilot-panel.js` | 🔵 沉淀 | 灵感助手面板 | - | 已稳定,拆分后保留面板结构+事件 |
+| `copilot-preview.js` | 🔵 沉淀 | 灵感助手预览渲染 | - | 拆分自 copilot-panel.js,.cp-preview 卡片生成 |
+| `zone-panel.js` | 🔵 沉淀 | 分区管理面板 | - | 已稳定,拆分后保留列表+入口 |
+| `zone-form.js` | 🔵 沉淀 | 分区表单 | - | 拆分自 zone-panel.js,新建/编辑表单 |
 | `help-panel.js` | 🔵 沉淀 | 按键说明面板 | - | 已稳定 |
 | `export-panel.js` | 🔵 沉淀 | 导出导入面板 | - | 已稳定 |
-| `observe-views.js` | 🔵 沉淀 | 观察模式三视图 | 2 | SP-1 完成 |
+| `observe-views.js` | 🔵 沉淀 | 观察模式入口 | 2 | SP-1 完成,拆分后保留入口+事件+fireReorder |
+| `observe-state.js` | 🔵 沉淀 | 观察模式状态管理 | - | 拆分自 observe-views.js,排序轴/层/模式状态 |
+| `observe-render.js` | 🔵 沉淀 | 观察模式渲染 | - | 拆分自 observe-views.js,卡片/看板/时间线 DOM |
 | `shape-indicator.js` | 🔵 沉淀 | 形状哲学可视化 | 21 | SP-1 完成 |
 | `toolbar.js` | 🔵 沉淀 | 工具条 | - | 已稳定 |
 | `quick-add.js` | 🔵 沉淀 | 快速捕获浮层 | - | 已稳定 |
@@ -180,19 +186,19 @@
 |---|---|---|---|
 | `check-arch.mjs` | 🟢 底座 | 架构守卫 | GEB 工具 |
 | `check-geb.mjs` | 🟢 底座 | GEB 守卫 | GEB 工具 |
-| `check-note-links.mjs` | 🟡 焦点 | **注释时间拓扑门禁** | @note 格式 + 双向验证 + 生成 .notes-link-graph.json |
-| `check-topology.mjs` | 🟡 焦点 | **拓扑表一致性门禁** | 校验拓扑表与实际文件/spec 的对应关系 |
-| `check-spec-coverage.mjs` | 🟡 焦点 | **Spec 覆盖率门禁** | 检查代码与 spec 的关联覆盖率 |
-| `check-spec-topology.mjs` | 🟡 焦点 | **Spec 拓扑规则门禁** | 检查 spec 的层、scope、overrides、inherits、conflicts 拓扑规则 |
-| `check-flag-topology.mjs` | 🟡 焦点 | **Feature Flag 拓扑门禁** | 检查 flag 引用一致性、scope、lifecycle、regression_subset |
-| `check-non-negotiable.mjs` | 🟡 焦点 | **Non-negotiable 代码语义校验** | P0-6:把 spec 的 hard constraint 自动映射为代码语义检查 |
-| `check-orphans.mjs` | 🟡 焦点 | **孤儿代码 + madge 循环检测** | P1-1:补充 depcruise 漏掉的动态 import 循环 + 检测无引用文件 |
-| `check-typecheck.mjs` | 🟡 焦点 | **渐进式 tsc 类型检查** | P1-2:tsc --noEmit --checkJs,统计类型错误数(渐进模式,不阻塞 commit) |
-| `check-test-spec-linkage.mjs` | 🟡 焦点 | **测试-决策溯源** | P1-4:把测试失败按 spec 决策 ID 分组,定位违反哪条决策 |
-| `check-spec-drift.mjs` | 🟡 焦点 | **Spec 决策漂移检测** | P2-4:实验性 spec 的 decision 数值与代码实际值对比, 超出 drift_tolerance → WARN |
-| `generate-flag-registry.mjs` | 🟡 焦点 | **Flag registry 自动生成** | 从 spec frontmatter 抽取 flags: 字段生成 registry.js |
-| `generate-holo-index.mjs` | 🟡 焦点 | **全息索引生成** | 生成代码↔spec↔原文三层环形映射索引 |
-| `generate-holo-report.mjs` | 🟡 焦点 | **全息仪表盘生成** | P1-3:基于 .holo-index.json 生成决策时间线 + 孤儿清单 + 关联分类 |
+| `check-note-links.mjs` | 🔵 沉淀 | **注释时间拓扑门禁** | @note 格式 + 双向验证 + 生成 .notes-link-graph.json |
+| `check-topology.mjs` | 🔵 沉淀 | **拓扑表一致性门禁** | 校验拓扑表与实际文件/spec 的对应关系 |
+| `check-spec-coverage.mjs` | 🔵 沉淀 | **Spec 覆盖率门禁** | 检查代码与 spec 的关联覆盖率 |
+| `check-spec-topology.mjs` | 🔵 沉淀 | **Spec 拓扑规则门禁** | 检查 spec 的层、scope、overrides、inherits、conflicts 拓扑规则 |
+| `check-flag-topology.mjs` | 🔵 沉淀 | **Feature Flag 拓扑门禁** | 检查 flag 引用一致性、scope、lifecycle、regression_subset |
+| `check-non-negotiable.mjs` | 🔵 沉淀 | **Non-negotiable 代码语义校验** | P0-6:把 spec 的 hard constraint 自动映射为代码语义检查 |
+| `check-orphans.mjs` | 🔵 沉淀 | **孤儿代码 + madge 循环检测** | P1-1:补充 depcruise 漏掉的动态 import 循环 + 检测无引用文件 |
+| `check-typecheck.mjs` | 🔵 沉淀 | **渐进式 tsc 类型检查** | P1-2:tsc --noEmit --checkJs,统计类型错误数(渐进模式,不阻塞 commit) |
+| `check-test-spec-linkage.mjs` | 🔵 沉淀 | **测试-决策溯源** | P1-4:把测试失败按 spec 决策 ID 分组,定位违反哪条决策 |
+| `check-spec-drift.mjs` | 🔵 沉淀 | **Spec 决策漂移检测** | P2-4:实验性 spec 的 decision 数值与代码实际值对比, 超出 drift_tolerance → WARN |
+| `generate-flag-registry.mjs` | 🔵 沉淀 | **Flag registry 自动生成** | 从 spec frontmatter 抽取 flags: 字段生成 registry.js |
+| `generate-holo-index.mjs` | 🔵 沉淀 | **全息索引生成** | 生成代码↔spec↔原文三层环形映射索引 |
+| `generate-holo-report.mjs` | 🔵 沉淀 | **全息仪表盘生成** | P1-3:基于 .holo-index.json 生成决策时间线 + 孤儿清单 + 关联分类 |
 | `bootstrap.mjs` | 🟢 底座 | 引导脚本 | GEB 工具 |
 | `install-hooks.mjs` | 🟢 底座 | 安装 git hooks | GEB 工具 |
 | `sync-mcp-config.mjs` | 🟢 底座 | 同步 MCP 配置 | GEB 工具 |
@@ -235,6 +241,7 @@
 | `/docs/methodology/06-arch-guard.md` | 🟢 底座 | 架构守卫 | CI + 测试金字塔 |
 | `/docs/methodology/07-sp1-case-study.md` | 🟡 焦点 | SP-1 案例 | 方法怎么一起用(项目特化) |
 | `/docs/methodology/08-cross-review.md` | 🟢 底座 | **跨视角并行审查** | agent team 强项制度化;SP 收尾阈值引用 |
+| `/docs/methodology/09-time-topology.md` | 🟢 底座 | **时间拓扑精度** | @note since 时间锚点;与 03 空间拓扑时空对偶;三环联想(GEB 怪圈);L1-8 宪法声明 |
 | `/docs/audit/2026-07-07-sp1-quality-review.md` | 🔵 沉淀 | SP-1 审查报告存档 | 08 方法的首次实践 |
 
 ---
@@ -314,12 +321,13 @@
 
 | 指标 | 健康范围 | 当前 |
 |---|---|---|
-| 🟡 焦点数量 | 1-3 个（过多 = 注意力分散）| **4 个**（形状哲学 2 项 + zone + SP-2 启动时机）|
+| 🟡 焦点数量 | 1-3 个（过多 = 注意力分散）| **10 个**（zone.js + shape-resolver.js + 6 个 flags/* 文件 + README-TOPOLOGY.md + 07-sp1-case-study.md,13 个 check-* 脚本已沉淀）|
 | 🔴 孤儿数量 | 0-2 个 | **0 个**（zone vs layer 关系已决策）|
-| ⚪ 废弃数量 | 历史保留,新增应少见 | **1 个** |
-| 🟢 底座数量 | 10-20 个（稳定底座）| **15+ 个**（合规）|
+| ⚪ 废弃数量 | 历史保留,新增应少见 | **0 个**（§3 代码文件表无 ⚪ 已废弃,仅 spec 表 phase-0 为 ⚪）|
+| 🟢 底座数量 | 10-20 个（稳定底座）| **32 个**（实际统计值）|
+| 🔵 沉淀数量 | 30-60 个（稳定主体）| **67 个**（13 个 check-* 沉淀 + src/render + src/core + src/topology + 文档层等已稳定文件）|
 
-> **当前健康**：健康。🟡 焦点从 5 个减到 4 个（SP-1 相关都沉淀了）,🔴 孤儿清零。
+> **当前健康**：健康。🟡 焦点从 23 个减到 10 个(13 个 check-* 脚本沉淀),🔴 孤儿清零。P1-2 机器检测已接入,健康指标自动校验。
 
 ---
 

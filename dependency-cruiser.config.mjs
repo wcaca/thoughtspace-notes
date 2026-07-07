@@ -28,9 +28,9 @@ export default {
       to: { path: '^src/(render|ui)' }
     },
     {
-      name: 'runtime-no-core',
+      name: 'core-no-runtime',
       severity: 'error',
-      comment: 'FATAL-005 / L1 架构约束 4: runtime 禁止被 core 依赖(core 必须保持纯逻辑可单测)',
+      comment: 'FATAL-005 / L1 架构约束 4: core 禁止依赖 runtime(core 必须保持纯逻辑可单测)',
       from: { path: '^src/core' },
       to: { path: '^src/runtime' }
     },
@@ -40,6 +40,13 @@ export default {
       comment: 'FATAL-005 / L1 架构约束 5: persistence 不应被 render 直接 import(应经 bridge)',
       from: { path: '^src/persistence' },
       to: { path: '^src/render' }
+    },
+    {
+      name: 'runtime-no-core-entity',
+      severity: 'error',
+      comment: 'FATAL-005 / L1 架构约束 6: runtime 禁止直接 import core 实体(应通过依赖注入)',
+      from: { path: '^src/runtime' },
+      to: { path: '^src/core' }
     }
   ],
   options: {

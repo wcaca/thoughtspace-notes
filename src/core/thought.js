@@ -1,8 +1,14 @@
 /**
  * [INPUT]: 无外部依赖,纯逻辑
- * [OUTPUT]: Thought 数据创建 / 温度衰减 / 新建念头工厂
+ * [OUTPUT]: Thought 数据创建(含 source 来源锚定: manual/voice/import/copilot-suggest) / 温度衰减 / 新建念头工厂
  * [POS]: src/core 下,念头数据的"源工厂",被 persistence 和 render 消费
  * [PROTOCOL]: 变更时更新此头部,然后检查 ../CLAUDE.md
+ */
+
+/**
+ * @typedef {Object} ThoughtSource
+ * @property {'manual' | 'voice' | 'import' | 'copilot-suggest'} type
+ * @property {string} [ref]
  */
 
 /**
@@ -17,12 +23,31 @@
  * @property {string[]} [tags]
  * @property {number} [createdAt]
  * @property {number} [updatedAt]
+ * @property {ThoughtSource} [source]
  */
 
 const DEFAULT_LAMBDA = 0.05;
 
-export function createThought(id, text, x, y) {
+/** source.type 的合法取值集合(来源锚定) */
+export const VALID_SOURCE_TYPES = new Set(['manual', 'voice', 'import', 'copilot-suggest']);
+
+/**
+ * 规范化 source 字段:非法/缺失时回退为 { type: 'manual' }
+ * @param {any} source
+ * @returns {ThoughtSource}
+ */
+export function normalizeSource(source) {
+  const fallback = { type: 'manual' };
+  if (!source || typeof source !== 'object') return fallback;
+  const type = VALID_SOURCE_TYPES.has(source.type) ? source.type : 'manual';
+  const out = { type };
+  if (typeof source.ref === 'string' && source.ref) out.ref = source.ref;
+  return out;
+}
+
+export function createThought(id, text, x, y, z, opts = {}) {
   const now = Date.now();
+  const source = normalizeSource(opts && opts.source);
   return {
     id,
     text: text || '',
@@ -32,7 +57,8 @@ export function createThought(id, text, x, y) {
     temperature: 1,
     colorTag: null,
     lastInteractionAt: now,
-    createdAt: now
+    createdAt: now,
+    source
   };
 }
 
