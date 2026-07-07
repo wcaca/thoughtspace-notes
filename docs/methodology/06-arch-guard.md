@@ -119,6 +119,21 @@ npx vitest run --reporter=basic
 SP 转 🔵 沉淀
 ```
 
+## §10 与 09 时间拓扑精度的互锁
+
+check-note-links.mjs 既是 06 的门禁工具,也是 [09 时间拓扑精度](09-time-topology.md) 的机器执行点。
+
+**环形联想**(详见 [09](09-time-topology.md) §3):
+```
+04 按需笔记(格式) ↔ 06 架构守卫(check-note-links.mjs) ↔ 09 时间拓扑(since)
+```
+
+- 04 定义 `@note(sub, type, anchor, since)` 格式
+- 06 的 check-note-links.mjs 验证格式 + 负向门禁
+- 09 的 `since` 字段被机器校验,构建时间拓扑图
+
+三者形成**格式↔门禁↔语义**互锁环 — 没有 06,04 会漂移;没有 09,06 只校验格式不校验时间维度。
+
 ---
 
 [PROTOCOL]: 变更时更新此头部,然后检查 ../CLAUDE.md

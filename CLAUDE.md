@@ -247,6 +247,7 @@ Keep the map aligned with the terrain, or the terrain will be lost.
 5. **[L1-5] AI/自动化建议必须以"半透明预览"形式呈现,不得直接修改用户数据** → check-non-negotiable.mjs GUARDS L1-5 守卫 (检测 copilot-panel.js cp-preview 标记 + ctx.onCreate* 调用必须在 enterPreview 闭包内)
 6. **[L1-6] 用户笔记内容默认不上云,云同步/AI 增强需用户主动开启** → check-non-negotiable.mjs GUARDS L1-6 守卫 (Phase 0 检测 fetch('http') / WebSocket / ServiceWorker 注册 — 白名单 localhost/127.0.0.1)
 7. **[L1-7] 全部算法公式与阈值(温度 λ=0.05、结晶 0.7、关系颜色)定义在 spec 中,代码不允许擅自修改** → check-spec-drift.mjs 解析 spec decisions[].statement 提取 key=value,在代码中匹配 `const X = Object.freeze({key:value})` 并计算漂移 (M1-4 更新: 原 grep guard 未实现,由 check-spec-drift 取代;locked→FATAL / floating→WARN)
+8. **[L1-8] @note 注释时间拓扑协议** — 代码注释中的易错/决策/接触点必须用 `@note(sub, type, anchor, since:YYYY-MM-DD)` 格式链接到 `docs/notes/` 笔记锚点;含 TODO/FIXME/易错/未决 触发词的文件必须有至少 1 个 @note(负向门禁) → check-note-links.mjs 门禁(双向验证 + 孤儿锚点检测 + .notes-link-graph.json 拓扑图生成)
 <!-- L1-MANIFEST-END -->
 
 ### 当前所处阶段

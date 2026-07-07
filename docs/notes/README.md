@@ -27,35 +27,48 @@
 
 ---
 
-## §2 注释约定
+## §2 注释约定(@note 机器可解析格式)
 
-### 2.1 易错陷阱注释
+> ⚠️ **格式已升级** — 旧格式 `// 详见 [docs/notes/...]` 已废弃,改用 `@note(...)` 格式以被 check-note-links.mjs 门禁识别。
+> 详见 [方法 04 按需加载笔记](../methodology/04-on-demand-notes.md) 和 [方法 09 时间拓扑精度](../methodology/09-time-topology.md)。
+
+### 2.1 标准格式
+
+```javascript
+// @note(sub-project, type, anchor, since:YYYY-MM-DD)
+```
+
+**四参必填**:
+1. `sub-project`: 子项目名(sp1, sp2, shape, topology)
+2. `type`: pitfall / decision / data-flow / integration
+3. `anchor`: 笔记文件中的 markdown 标题锚点
+4. `since`: 引入日期(时间拓扑锚点,见 [09](../methodology/09-time-topology.md))
+
+### 2.2 易错陷阱注释
 
 ```javascript
 // ⚠️ 易错: 装配后必须调 bootstrapDefaults,否则 layers.size()=0
-//   详见 [docs/notes/sp1/pitfalls.md#T1.4-no-bootstrap]
+// @note(sp1, pitfall, T1.4-no-bootstrap, since:2026-07-07)
 currentLayerStore.bootstrapDefaults();
 ```
 
-**关键**: 链接是**相对路径**,跨平台可用。
-
-### 2.2 决策注释
+### 2.3 决策注释
 
 ```javascript
 // 📋 决策: 为什么用 window.__sp1State 而不是 ESM import?
-//   详见 [docs/notes/sp1/decisions.md#why-window-globals]
+// @note(sp1, decision, why-window-globals, since:2026-07-07)
 window.__sp1State = { ... };
 ```
 
-### 2.3 接触点注释
+### 2.4 接触点注释
 
 ```javascript
 // 🔗 接触点: 此函数被 observe-views.js 通过 window.__sp1State 调用
-//   详见 [docs/notes/sp1/integration-points.md#observe-views]
+// @note(sp1, integration, observe-views, since:2026-07-07)
 function setCanvasMode(m) { ... }
 ```
 
-### 2.4 命名锚点
+### 2.5 命名锚点
 
 每个笔记文件用 markdown 标题做锚点,例如:
 
@@ -63,7 +76,16 @@ function setCanvasMode(m) { ... }
 ## T1.4-no-bootstrap   ← 这就是锚点
 ```
 
-注释中用 `#T1.4-no-bootstrap` 跳到此处。
+`@note` 的 anchor 参数必须与此标题完全一致。
+
+### 2.6 负向门禁(关键约束)
+
+含以下触发词的文件,必须至少有 1 个 @note 链接,否则阻止 commit:
+
+- `TODO` / `FIXME` / `XXX` / `HACK`
+- `易错` / `未决` / `暂未启用`
+
+**门禁**:check-note-links.mjs 的 `checkNegativeCoverage()` 函数执行此检查。
 
 ---
 
