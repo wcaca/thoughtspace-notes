@@ -9,16 +9,16 @@ export default {
     {
       name: 'core-no-render-lib',
       severity: 'error',
-      comment: 'FATAL-005 / L1 架构约束 1: core 禁止依赖 pixi.js 等渲染库',
-      from: { path: '^src/core' },
-      to: { path: 'node_modules/(pixi\\.js|@pixi|d3-.*)' }
+      comment: 'FATAL-005 / L1 架构约束 1: core 禁止依赖 three/pixi.js 等渲染库',
+      from: { path: '^src/(v2/)?core' },
+      to: { path: 'node_modules/(pixi\\.js|@pixi|three|d3-.*)' }
     },
     {
       name: 'core-no-upper-layer',
       severity: 'error',
-      comment: 'FATAL-005 / L1 架构约束 2: core 禁止依赖 render/ui/persistence/sim 上层',
-      from: { path: '^src/core' },
-      to: { path: '^src/(render|ui|persistence|sim)' }
+      comment: 'FATAL-005 / L1 架构约束 2: core 禁止依赖 render/interaction/platform/persistence/sim 上层',
+      from: { path: '^src/(v2/)?core' },
+      to: { path: '^src/(v2/)?(render|interaction|platform|persistence|sim|ui)' }
     },
     {
       name: 'sim-no-render',
@@ -31,22 +31,36 @@ export default {
       name: 'core-no-runtime',
       severity: 'error',
       comment: 'FATAL-005 / L1 架构约束 4: core 禁止依赖 runtime(core 必须保持纯逻辑可单测)',
-      from: { path: '^src/core' },
+      from: { path: '^src/(v2/)?core' },
       to: { path: '^src/runtime' }
     },
     {
       name: 'persistence-no-render',
       severity: 'error',
       comment: 'FATAL-005 / L1 架构约束 5: persistence 不应被 render 直接 import(应经 bridge)',
-      from: { path: '^src/persistence' },
-      to: { path: '^src/render' }
+      from: { path: '^src/(v2/)?persistence' },
+      to: { path: '^src/(v2/)?(render|interaction|platform)' }
     },
     {
       name: 'runtime-no-core-entity',
       severity: 'error',
       comment: 'FATAL-005 / L1 架构约束 6: runtime 禁止直接 import core 实体(应通过依赖注入)',
       from: { path: '^src/runtime' },
-      to: { path: '^src/core' }
+      to: { path: '^src/(v2/)?core' }
+    },
+    {
+      name: 'v2-render-no-interaction',
+      severity: 'error',
+      comment: 'FATAL-005 / L1 架构约束 9: v2 render 禁止依赖 interaction/platform 上层',
+      from: { path: '^src/v2/render' },
+      to: { path: '^src/v2/(interaction|platform)' }
+    },
+    {
+      name: 'v2-interaction-no-platform',
+      severity: 'error',
+      comment: 'FATAL-005 / L1 架构约束 10: v2 interaction 禁止依赖 platform',
+      from: { path: '^src/v2/interaction' },
+      to: { path: '^src/v2/platform' }
     }
   ],
   options: {

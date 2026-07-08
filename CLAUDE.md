@@ -4,7 +4,7 @@
 > 一切变更必须遵守文末的 GEB 回环工作流。
 
 ```yaml
-技术栈: TypeScript-风格 JavaScript(ESM) + PixiJS + d3-force + Yjs + IndexedDB + Vitest + dependency-cruiser
+技术栈: TypeScript-风格 JavaScript(ESM) + Three.js + d3-force-3d + Yjs + IndexedDB + Vitest + dependency-cruiser
 目标平台: 用户本机运行的桌面 / Web 应用(战略决策 2026-07:平台适配后置)
 当前阶段: Phase 0 - 概念验证
 ```
@@ -240,7 +240,7 @@ Keep the map aligned with the terrain, or the terrain will be lost.
 ### 不可违反的架构约束(本仓库)
 <!-- L1-MANIFEST-START -->
 <!-- L1 机器校验锚点:check-geb.mjs §L1 §ARCHITECTURE 段会解析以下 8 条,要求每条都有对应门禁 -->
-1. **[L1-1]`src/core/**` 禁止 import 任何渲染库(PixiJS)或 d3-force 之外的第三方** → depcruise 规则: `core-no-render-lib`
+1. **[L1-1]`src/core/**` 禁止 import 任何渲染库(Three.js)或 d3-force-3d 之外的第三方** → depcruise 规则: `core-no-render-lib`
 2. **[L1-2]`src/core/**` 禁止 import `src/{render, ui, persistence, sim}` 任何模块** → depcruise 规则: `core-no-upper-layer`
 3. **[L1-3]`src/sim/**` 禁止 import `src/{render, ui}` 任何模块** → depcruise 规则: `sim-no-render`
 4. **[L1-4] Yjs 文档是唯一权威数据源,IndexedDB 只是可重建的镜像** → check-spec-topology.mjs 验证 `persistence-yjs-bridge` 的 non-negotiable
@@ -248,6 +248,8 @@ Keep the map aligned with the terrain, or the terrain will be lost.
 6. **[L1-6] 用户笔记内容默认不上云,云同步/AI 增强需用户主动开启** → check-non-negotiable.mjs GUARDS L1-6 守卫 (Phase 0 检测 fetch('http') / WebSocket / ServiceWorker 注册 — 白名单 localhost/127.0.0.1)
 7. **[L1-7] 全部算法公式与阈值(温度 λ=0.05、结晶 0.7、关系颜色)定义在 spec 中,代码不允许擅自修改** → check-spec-drift.mjs 解析 spec decisions[].statement 提取 key=value,在代码中匹配 `const X = Object.freeze({key:value})` 并计算漂移 (M1-4 更新: 原 grep guard 未实现,由 check-spec-drift 取代;locked→FATAL / floating→WARN)
 8. **[L1-8] @note 注释时间拓扑协议** — 代码注释中的易错/决策/接触点必须用 `@note(sub, type, anchor, since:YYYY-MM-DD)` 格式链接到 `docs/notes/` 笔记锚点;含 TODO/FIXME/易错/未决 触发词的文件必须有至少 1 个 @note(负向门禁) → check-note-links.mjs 门禁(双向验证 + 孤儿锚点检测 + .notes-link-graph.json 拓扑图生成)
+9. **[L1-9] `src/v2/render/**` 禁止 import `src/v2/{interaction,platform}` 上层** → depcruise 规则: `v2-render-no-interaction`(v2分层隔离,render不得依赖交互层和平台层)
+10. **[L1-10] `src/v2/interaction/**` 禁止 import `src/v2/platform`** → depcruise 规则: `v2-interaction-no-platform`(v2分层隔离,交互层不得依赖平台层)
 <!-- L1-MANIFEST-END -->
 
 ### 当前所处阶段

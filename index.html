@@ -5,29 +5,65 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
 <title>念头空间 · 拓扑意识空间</title>
 <style>
-  :root { --bg-deep: #080a14; --crystal: #7fe0c9; --amber: #e8a865; --rose: #e87aa8; --ink: #e9e7f4; --ink-dim: #8b90ad; }
+  :root { --bg-deep: #050811; --crystal: #7fe0c9; --amber: #e8a865; --rose: #e87aa8; --ink: #e9e7f4; --ink-dim: #8b90ad; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { width: 100%; height: 100%; overflow: hidden; background: var(--bg-deep); color: var(--ink); font-family: "PingFang SC", "Microsoft YaHei", sans-serif; user-select: none; -webkit-user-select: none; touch-action: none; }
   #stage { position: fixed; inset: 0; }
-  .top-bar { position: fixed; top: 16px; left: 50%; transform: translateX(-50%); z-index: 10; display: flex; gap: 12px; }
-  .top-bar span { font-size: 12px; color: var(--ink-dim); letter-spacing: 2px; }
-  .top-bar b { color: var(--crystal); font-weight: 500; }
-  .hint-bar { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 10; font-size: 11px; color: var(--ink-dim); letter-spacing: 2px; pointer-events: none; text-align: center; transition: opacity 0.6s; }
-  .hint-bar.fade { opacity: 0; }
+  /* Round 7: 所有 UI 都是 3D 空间对象 — 删除 .note-panel 和 .zoom-indicator 浮窗 */
 </style>
 </head>
 <body>
   <div id="stage"></div>
-  <div class="top-bar">
-    <span>念头 <b id="stat-nodes">0</b></span>
-    <span>连接 <b id="stat-edges">0</b></span>
-    <span>面 <b id="stat-face">正面</b></span>
-  </div>
-  <div class="hint-bar" id="hint">
-    滑动切换意识面 · 点击投念头 · 双击捞起 · Ctrl+Z 撤销
-  </div>
   <script type="importmap">
-    { "imports": { "three": "./node_modules/three/build/three.module.js", "d3-force-3d": "./node_modules/d3-force-3d/dist/d3-force-3d.es.js", "convex-hull": "./node_modules/convex-hull/lib/ch.js" } }
+    {
+      "imports": {
+        "three": "./node_modules/three/build/three.module.js",
+        "yjs": "./node_modules/yjs/dist/yjs.mjs",
+        "y-indexeddb": "./node_modules/y-indexeddb/src/y-indexeddb.js",
+        "lib0/observable": "./node_modules/lib0/observable.js",
+        "lib0/array": "./node_modules/lib0/array.js",
+        "lib0/math": "./node_modules/lib0/math.js",
+        "lib0/map": "./node_modules/lib0/map.js",
+        "lib0/encoding": "./node_modules/lib0/encoding.js",
+        "lib0/decoding": "./node_modules/lib0/decoding.js",
+        "lib0/promise": "./node_modules/lib0/promise.js",
+        "lib0/random": "./node_modules/lib0/random.js",
+        "lib0/buffer": "./node_modules/lib0/buffer.js",
+        "lib0/error": "./node_modules/lib0/error.js",
+        "lib0/binary": "./node_modules/lib0/binary.js",
+        "lib0/function": "./node_modules/lib0/function.js",
+        "lib0/set": "./node_modules/lib0/set.js",
+        "lib0/logging": "./node_modules/lib0/logging.js",
+        "lib0/time": "./node_modules/lib0/time.js",
+        "lib0/string": "./node_modules/lib0/string.js",
+        "lib0/object": "./node_modules/lib0/object.js",
+        "lib0/iterator": "./node_modules/lib0/iterator.js",
+        "lib0/environment": "./node_modules/lib0/environment.js",
+        "lib0/number": "./node_modules/lib0/number.js",
+        "lib0/symbol": "./node_modules/lib0/symbol.js",
+        "lib0/url": "./node_modules/lib0/url.js",
+        "lib0/json": "./node_modules/lib0/json.js",
+        "lib0/list": "./node_modules/lib0/list.js",
+        "lib0/sort": "./node_modules/lib0/sort.js",
+        "lib0/component": "./node_modules/lib0/component.js",
+        "lib0/conditions": "./node_modules/lib0/conditions.js",
+        "lib0/diff": "./node_modules/lib0/diff.js",
+        "lib0/eventloop": "./node_modules/lib0/eventloop.js",
+        "lib0/pledge": "./node_modules/lib0/pledge.js",
+        "lib0/cache": "./node_modules/lib0/cache.js",
+        "lib0/queue": "./node_modules/lib0/queue.js",
+        "lib0/storage": "./node_modules/lib0/storage.js",
+        "lib0/tree": "./node_modules/lib0/tree.js",
+        "lib0/webcrypto": "./node_modules/lib0/webcrypto.js",
+        "lib0/metric": "./node_modules/lib0/metric.js",
+        "lib0/mutex": "./node_modules/lib0/mutex.js",
+        "lib0/pair": "./node_modules/lib0/pair.js",
+        "lib0/prng": "./node_modules/lib0/prng.js",
+        "lib0/schema": "./node_modules/lib0/schema.js",
+        "lib0/statistics": "./node_modules/lib0/statistics.js",
+        "lib0/dom": "./node_modules/lib0/dom.js"
+      }
+    }
   </script>
   <script type="module" src="./src/main.js"></script>
 </body>
