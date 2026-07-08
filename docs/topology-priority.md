@@ -122,6 +122,8 @@
 | `structure.js` | 🔵 沉淀 | 结构工具 | 6 | 已稳定 |
 | `layer-store.js` | 🔵 沉淀 | SP-1 层管理 | 29 | SP-1 完成,已稳定 |
 | `sort-axis.js` | 🔵 沉淀 | SP-1 排序哲学 | 43 | SP-1 完成,已稳定 |
+| `note.js` | 🔵 沉淀 | 笔记数据模型 | - | 已稳定,L3头部governance修复 |
+| `thought-from-note.js` | 🔵 沉淀 | 笔记→念头转换 | - | 已稳定,L3头部governance修复 |
 
 ### 3.2 src/render/（渲染层,负责 DOM/Canvas/3D）
 
@@ -170,6 +172,14 @@
 | `error-handler.js` | 🔵 沉淀 | 全局错误捕获 | - | 已稳定 |
 | `awareness-hud.js` | 🔵 沉淀 | 觉察 HUD | - | 已稳定 |
 | `a11y.js` | 🔵 沉淀 | 无障碍 | 8 | 已稳定 |
+| `breath-particles.js` | 🔵 沉淀 | 节律粒子背景 | - | 200颗环形粒子 sin/cos 微波动 |
+| `dust.js` | 🔵 沉淀 | 远景星尘 | - | 800颗 Points 空间感背景 |
+| `frame.js` | 🔵 沉淀 | 框架对象基类 | - | 3D Plane+CanvasTexture+吸附盒+拖拽手柄 |
+| `frame-drag.js` | 🔵 沉淀 | 框架拖拽+吸附 | - | raycast命中+重力井30px snap |
+| `snap-points.js` | 🔵 沉淀 | 吸附位+重力井 | - | getNearestSnap+createSnapMarkers |
+| `infinite-grid.js` | 🔵 沉淀 | 无限网格 | - | z=0平面 GridHelper 主背景层 |
+| `interaction.js` | 🔵 沉淀 | 三件套交互 | - | wheel缩放+空白平移+拖Thought |
+| `sediment-plane.js` | 🔵 沉淀 | 沉积层平面 | - | y<-50半透明+fog 顶点着色 |
 
 ### 3.3 src/topology/（3D 拓扑层）
 

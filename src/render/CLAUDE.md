@@ -12,6 +12,15 @@
 - `zone-mesh.js`: 用户自定义分区的 3D 可视化（半透明球体 + 中心文字标签）
 - `sediment-layer.js`: 沉积层渲染(节流 500ms 重建粒子)
 - `crystallize-fx.js`: 结晶特效(Three.js;Shift+click 多选 + 工具栏 "✦ 提炼" 按钮触发,调用 animateCrystallization)
+- `breath-particles.js`: 节律粒子(背景呼吸) / 200 颗环形粒子 sin/cos 微波动 + `updateBreathParticles`
+- `dust.js`: 远景星尘 / 800 颗 Points "空间感"微光背景
+- `infinite-grid.js`: 无限网格(z=0 平面) / GridHelper 主背景层"空间感"承载
+- `sediment-plane.js`: 沉积层平面(y<-50 半透明 + fog) / 顶点着色中心亮边缘渐变
+
+### 3D 框架对象 (Round 7)
+- `frame.js`: 框架对象基类 / 3D Plane + CanvasTexture + 吸附盒 + 拖拽手柄
+- `frame-drag.js`: 框架拖拽 + 吸附 / raycast 命中 + 重力井 30px snap
+- `snap-points.js`: 4 个固定吸附位 + 重力井 / `getNearestSnap` + `createSnapMarkers` + `updateSnapMarkers`
 
 ### 视角与状态
 - `viewport-state.js`: 统一视角总线；所有面板/相机/观察模式从此读
@@ -54,6 +63,7 @@
 - `voice-capture.js`: 语音录入（Web Speech API）；仅当浏览器支持时启用
 - `contemplate-overlay.js`: 念头计时静观（呼吸圆环 + 倒计时 + 记录感受闭环）
 - `reunion-toast.js`: "意外重逢"低频提示；点击查看跳转，关闭则下次不再打扰
+- `interaction.js`: 三件套交互 / wheel 缩放 + 空白平移 + 拖 Thought（raycast 命中 + z=0 平面投影）
 
 ### 全局系统
 - `error-handler.js`: 全局错误处理 + 白屏恢复面板

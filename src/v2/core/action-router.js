@@ -1,6 +1,6 @@
 /**
  * [INPUT]: 手势事件（来自interaction/gesture-recognizer，S3填充）
- * [OUTPUT]: ActionRouter类 — 用户操作统一路由（手势冲突解决）
+ * [OUTPUT]: ActionRouter类 — 用户操作统一路由(手势冲突解决,@note type规范化为decision)
  * [POS]: src/v2/core/action-router.js,L1领域核心,排查基础组件
  * [PROTOCOL]: 变更时更新此头部,然后检查 ../CLAUDE.md
  *
@@ -21,7 +21,7 @@
  *   - 点击vs长按: 按持续时间区分（阈值500ms）
  *   - 拖拽vs滑动: 按区域区分（基准面vs1/4操作区）
  *
- * @note(s0, skeleton, action-router, since:2026-07-08)
+ * @note(s0, decision, action-router, since:2026-07-08)
  *   S0只建骨架+枚举定义,S3填充手势识别和冲突解决。
  *   当前route()返回占位action或抛NotImplementedError。
  */
@@ -102,7 +102,7 @@ export class ActionRouter {
    * @param {number} [gesture.duration] - 持续时间
    * @returns {Object} UserAction
    * @throws {NotImplementedError} S0骨架未实现
-   * @note(s0, skeleton, route, since:2026-07-08)
+   * @note(s0, decision, route, since:2026-07-08)
    *   S3实现: 按gesture.type分发到对应处理器,解决冲突,返回UserAction
    */
   route(gesture) {
@@ -122,7 +122,7 @@ export class ActionRouter {
    * 获取操作历史（供AI排查）
    * @param {number} [limit=100] - 返回最近N条
    * @returns {Array<Object>} 操作历史
-   * @note(s0, skeleton, ai-history, since:2026-07-08)
+   * @note(s0, decision, ai-history, since:2026-07-08)
    *   AI自排查能力: 让AI能查看用户操作历史,辅助定位问题
    */
   getActionHistory(limit = 100) {

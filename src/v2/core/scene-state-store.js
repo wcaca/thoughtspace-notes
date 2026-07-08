@@ -1,6 +1,6 @@
 /**
  * [INPUT]: Yjs Doc（由persistence层创建，S1填充注入）
- * [OUTPUT]: SceneStateStore类 — 统一状态中枢，三层状态管理（Yjs权威层/瞬态层/渲染缓存层）
+ * [OUTPUT]: SceneStateStore类 — 统一状态中枢,三层状态管理(Yjs权威层/瞬态层/渲染缓存层,@note type规范化为decision)
  * [POS]: src/v2/core/scene-state-store.js,L1领域核心,排查基础组件
  * [PROTOCOL]: 变更时更新此头部,然后检查 ../CLAUDE.md
  *
@@ -15,7 +15,7 @@
  *   - generateDiagnosticReport(): 诊断报告生成（供AI自动检测问题）
  *   - getSnapshot(t): 时间线快照回放（供AI回溯问题）
  *
- * @note(s0, skeleton, state-store, since:2026-07-08)
+ * @note(s0, decision, state-store, since:2026-07-08)
  *   S0只建骨架,S1填充Yjs集成,S2填充渲染缓存,S3填充诊断引擎。
  *   当前所有方法返回占位值或抛NotImplementedError。
  */
@@ -103,7 +103,7 @@ export class SceneStateStore {
    * 应用用户操作（统一入口）
    * @param {Object} action - 用户操作（来自ActionRouter）
    * @throws {NotImplementedError} S0骨架未实现
-   * @note(s0, skeleton, apply-action, since:2026-07-08)
+   * @note(s0, decision, apply-action, since:2026-07-08)
    *   S1实现: 解析action → 更新yjsState或transientState → 标记renderCache失效
    */
   applyUserAction(action) {
@@ -124,7 +124,7 @@ export class SceneStateStore {
    * 序列化所有实体状态为JSON（供AI读取）
    * @returns {Object} 可JSON化的状态快照
    * @throws {NotImplementedError} S0骨架未实现
-   * @note(s0, skeleton, ai-serialize, since:2026-07-08)
+   * @note(s0, decision, ai-serialize, since:2026-07-08)
    *   AI自排查能力: 让AI能读取任意实体的完整状态
    */
   serialize() {
@@ -136,7 +136,7 @@ export class SceneStateStore {
    * @param {string} [changeId] - 起始变更ID（不传则导出全部）
    * @returns {Array<Object>} 变更记录列表
    * @throws {NotImplementedError} S0骨架未实现
-   * @note(s0, skeleton, ai-change-chain, since:2026-07-08)
+   * @note(s0, decision, ai-change-chain, since:2026-07-08)
    *   AI自排查能力: 让AI能追溯任意变更的因果关系
    */
   exportChangeChain(changeId) {
@@ -147,7 +147,7 @@ export class SceneStateStore {
    * 生成诊断报告（供AI自动检测问题）
    * @returns {Object} 诊断报告
    * @throws {NotImplementedError} S0骨架未实现
-   * @note(s0, skeleton, ai-diagnostic, since:2026-07-08)
+   * @note(s0, decision, ai-diagnostic, since:2026-07-08)
    *   AI自排查能力: 让AI能自动获取诊断报告
    */
   generateDiagnosticReport() {
@@ -159,7 +159,7 @@ export class SceneStateStore {
    * @param {number} timestamp - 时间戳
    * @returns {Object|null} 快照
    * @throws {NotImplementedError} S0骨架未实现
-   * @note(s0, skeleton, ai-snapshot, since:2026-07-08)
+   * @note(s0, decision, ai-snapshot, since:2026-07-08)
    *   AI自排查能力: 让AI能回放任意时间点的状态
    */
   getSnapshot(timestamp) {

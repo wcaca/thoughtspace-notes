@@ -13,6 +13,7 @@
 - `zone-bridge.js`: memory zone store ↔ Y.Map('zones') 双向镜像桥
 - `crystal-bridge.js`: memory crystals Array ↔ Y.Map('crystals') 双向镜像桥
 - `action-bridge.js`: memory action Map ↔ Y.Map('actions') 双向镜像桥
+- `note-bridge.js`: Note Yjs 桥接 / `getNotesMap` + `loadSeedIfEmpty` + `addNote`（Note 的持久化层）
 
 ### 导入导出与完整性
 - `exporter.js`: 把内存/持久化形态转换成可保存 / 可分享的可移植格式

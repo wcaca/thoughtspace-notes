@@ -1,20 +1,12 @@
 # persistence/
-> L2 | 父级: src/v2/CLAUDE.md
+> L2 | 父级: ../CLAUDE.md
 
 L0持久化层（Yjs CRDT + IndexedDB + 同步层）。
 
 ## 成员清单
-yjs-store.js: Yjs CRDT存储
-thought-bridge.js: 念头桥接（Y.Map嵌套Y类型，观察者分发）
-layer-bridge.js: 层桥接（含mark-system实例持久化）
-relation-bridge.js: 关系桥接
-rule-bridge.js: 规则桥接
-content-bridge.js: 内容格式桥接
-undo-manager.js: 撤销管理（追踪8个Y.Map，captureTimeout=100ms）
-exporter.js: 导出
-importer.js: 导入
-clipboard.js: 剪贴板代码中转
-sync/websocket-provider.js: WebSocket同步
-sync/server-config.js: 服务器配置
+- `layer-bridge.js` — 层配置持久化桥接（Yjs CRDT双向同步，origin='layer-bridge'便于UndoManager追踪）
 
-[PROTOCOL]: 变更时更新此头部,然后检查 src/v2/CLAUDE.md
+## 待创建（后续阶段）
+yjs-store.js / thought-bridge.js / relation-bridge.js / rule-bridge.js / content-bridge.js / undo-manager.js / exporter.js / importer.js / clipboard.js / sync/websocket-provider.js / sync/server-config.js
+
+[PROTOCOL]: 变更时更新此头部,然后检查 ../CLAUDE.md
