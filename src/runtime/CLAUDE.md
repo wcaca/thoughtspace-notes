@@ -18,6 +18,7 @@
 - `flags/kill-switch.js` — 紧急熔断
 - `flags/bootstrap.js` — 一次性注入 flag resolver 到 shape-resolver
 - `flags/index.js` — 对外 API（isOn / getVariant / setOverride / killSwitch）
+- `flags/v2-migration.js` — v2入口级切换检测（URL参数?v2=true，独立于registry系统）
 
 ## 参考文档
 - [spec/2026-07-07-feature-flag-system-design.md](../../docs/superpowers/specs/2026-07-07-feature-flag-system-design.md)

@@ -65,6 +65,18 @@
       }
     }
   </script>
-  <script type="module" src="./src/main.js"></script>
+  <!-- S0.3: 入口级v1/v2切换 —— 实现方案§2.2,彻底隔离v1/v2入口 -->
+  <!-- ?v2=true 加载 src/v2/main.js; 不加参数加载 src/main.js (v1) -->
+  <script type="module">
+    // @note(s0, decision, entry-switch, since:2026-07-08)
+    // 入口切换不走registry flag系统: 发生在flag系统加载之前, 用URL参数直接检测
+    const params = new URLSearchParams(location.search);
+    const isV2 = params.get('v2') === 'true';
+    const entry = isV2 ? './src/v2/main.js' : './src/main.js';
+    const script = document.createElement('script');
+    script.type = 'module';
+    script.src = entry;
+    document.head.appendChild(script);
+  </script>
 </body>
 </html>

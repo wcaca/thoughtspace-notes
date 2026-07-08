@@ -64,7 +64,7 @@ const srcExists = existsSync(join(ROOT, 'src'));
           for (const mm of matches) {
             const id = mm[1];
             const tail = mm[2];
-            const depRuleMatch = tail.match(/depcruise\s*规则[:：]\s*`?([a-z-]+)`?/);
+            const depRuleMatch = tail.match(/depcruise\s*规则[:：]\s*`?([a-z0-9-]+)`?/);
             const checkMatch = tail.match(/check-([a-z-]+)/);
             if (depRuleMatch) {
               const ruleName = depRuleMatch[1];
@@ -126,7 +126,7 @@ const srcExists = existsSync(join(ROOT, 'src'));
 
         // 从 L1 提取所有 depcruise 规则引用:ruleName → [L1-N] 编号
         const l1DepRules = new Map();
-        const depRuleRegex = /\[L1-(\d+)\][^\n]*?depcruise\s*规则[:：]\s*`?([a-z-]+)`?/g;
+        const depRuleRegex = /\[L1-(\d+)\][^\n]*?depcruise\s*规则[:：]\s*`?([a-z0-9-]+)`?/g;
         let depMatch;
         while ((depMatch = depRuleRegex.exec(block)) !== null) {
           l1DepRules.set(depMatch[2], depMatch[1]);
