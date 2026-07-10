@@ -1,6 +1,6 @@
 /**
- * [INPUT]: three.js, S1全部组件（core+render+persistence+interaction）
- * [OUTPUT]: v2 S1可运行入口 —— 有限3D晶体+6层+2外置+基准面+操作区+视角轨道
+ * [INPUT]: three.js, S1全部组件（core+render+persistence+interaction）+ S2 thought/memory 实体（core/thought.js + render/thought-mesh.js + render/memory-mesh.js + persistence/thought-bridge.js）
+ * [OUTPUT]: v2 S1可运行入口 + S2.8 念头/记忆实体集成 (3 个示例 Thought 可视化 + thought-bridge 接入)
  * [POS]: src/v2/main.js,v2应用入口,被index.html的bootstrap脚本动态加载
  * [PROTOCOL]: 变更时更新此头部,然后检查 ../CLAUDE.md
  *
@@ -13,9 +13,21 @@
  *   - 空间外部信息边界可见但不可操作
  *   - 排查基础组件初始化（SceneStateStore + 5个排查core）
  *
+ * S2.8 验收目标（S2组件实施顺序 §3）:
+ *   - 启动后全局有 3 个示例 Thought (光质/阴影/温度 文本) 可视化
+ *   - __v2.thoughtMesh / __v2.memoryMesh / __v2.thoughtRefs 暴露
+ *   - __v2.spawnSampleThought 可手动调加念头
+ *   - thought-bridge 接入 (无 Yjs 时 no-op, 有 Yjs 时 sync)
+ *   - ThoughtMeshRenderer (100 capacity) + MemoryMeshRenderer (100 capacity) 就绪
+ *
  * @note(s1, decision, v2-main, since:2026-07-08)
  *   S1集成入口：空间本体阶段全部组件接入。
  *   S0骨架升级为S1完整实现，保留全局调试入口。
+ *
+ * @note(s2, decision, s2-8-entity-integration, since:2026-07-10)
+ *   S2.8 集成 Thought 类 + thought-mesh + memory-mesh + thought-bridge。
+ *   3 个示例 Thought 验证实例化管线 (Thought→upsert→mesh 写入)。
+ *   S2.9 (quick-add 交互) + S2.10 (render-pipeline) 推进 phase-transition 动画。
  */
 import * as THREE from 'three';
 import { SceneStateStore } from './core/scene-state-store.js';
@@ -36,6 +48,18 @@ import { ViewOrbitCamera } from './render/view-orbit-camera.js';
 import { BasePlane } from './render/base-plane.js';
 import { OperationZone } from './render/operation-zone.js';
 import { SpaceBoundary } from './render/space-boundary.js';
+import { ThoughtMeshRenderer } from './render/thought-mesh.js';
+import { MemoryMeshRenderer } from './render/memory-mesh.js';
+import { ThoughtBridge, createThoughtBridge } from './persistence/thought-bridge.js';
+import {
+  Thought,
+  ThoughtPhase,
+  ThoughtMaterial,
+  ThoughtShape,
+  CreatedBy,
+  genThoughtId,
+  EntityType,
+} from './core/thought.js';
 
 // ===== 1. 排查基础骨架初始化 =====
 const stateStore = new SceneStateStore({ yjsDoc: null });
@@ -144,6 +168,55 @@ console.log('[v2] S1 渲染组件已初始化', {
   camera: orbitCamera.getSummary(),
 });
 
+// ===== 4.5. S2 念头/记忆实体 (S2.8 集成) =====
+// @note(s2, decision, thought-entity-integration, since:2026-07-10)
+//   S2.1-S2.7 完成后集成: Thought 类 + thought-mesh + memory-mesh + thought-bridge
+//   S2.8 步骤:
+//     1. 实例化 ThoughtMeshRenderer / MemoryMeshRenderer (capacity 100)
+//     2. 创建 thoughtRefs Map<id, Thought> 作为内存中枢
+//     3. 塞 3 个示例 Thought (S2.9 才会接 UI, 现在是可视化验证)
+//     4. 接入 thought-bridge (无 Yjs 时 no-op, 有 Yjs 时同步)
+const thoughtMesh = new ThoughtMeshRenderer({ scene, capacity: 100, space });
+const memoryMesh = new MemoryMeshRenderer({ scene, capacity: 100, space });
+
+// 内存中枢: thoughtId -> Thought 实例
+const thoughtRefs = new Map();
+thoughtMesh.setThoughtRefs(thoughtRefs);
+
+// 示例数据 (S2.9 之前手动, S2.9+ 走 action-router)
+const sampleLayers = layerSystem.getLayers();
+// 选 con-middle (index 5, vertical 0.57-0.73) — 意识中位层, 与“跳念头/查词”场景近
+const defaultLayer = sampleLayers[5]?.id || sampleLayers[Math.floor(sampleLayers.length / 2)]?.id;
+
+function spawnSampleThought(opts = {}) {
+  const t = new Thought({
+    content: opts.content || '默认念头',
+    layerId: opts.layerId || defaultLayer,
+    position: opts.position || { vertical: 0.5, radial: 0.4, orbital: Math.random() * Math.PI * 2 },
+    space,
+    layerSystem,
+  });
+  // 设为晶体态 (默认 SEED)
+  t.tickPhaseTransition(ThoughtPhase.CRYSTAL);
+  thoughtRefs.set(t.id, t);
+  thoughtMesh.upsert(t, { viewVertical: 0.5 });
+  return t;
+}
+
+spawnSampleThought({ content: '光质・为什么这里会动' });
+spawnSampleThought({ content: '阴影・边界在退' });
+spawnSampleThought({ content: '温度・想法在沉' });
+
+// thought-bridge: Yjs 未接入, 这里是 no-op 路径
+const thoughtBridge = createThoughtBridge(null, { sceneStateStore: stateStore });
+
+console.log('[v2] S2.8 念头/记忆实体已初始化', {
+  thoughtMeshCapacity: thoughtMesh.capacity,
+  memoryMeshCapacity: memoryMesh.capacity,
+  sampleThoughts: thoughtRefs.size,
+  bridgeActive: !!thoughtBridge,
+});
+
 // ===== 5. 视角切换测试（S3手势接入前的临时交互）=====
 // 键盘 1-5 切换到5个预设位置
 window.addEventListener('keydown', (e) => {
@@ -186,6 +259,9 @@ function animate() {
 
   // 缓慢旋转晶体轮廓（视觉提示空间可旋转）
   // 注意：实际旋转由orbitCamera控制，这里只做微弱呼吸效果
+
+  // S2.8: 同步 thought/memory 帧 (实例化属性已在 upsert 写入, 这里只做 viewVertical 跟随)
+  // 注: 完整 phase-transition 动画须 S2.10 render-pipeline 调度, 这里只保证不崩
 
   // 每100ms拍摄快照（排查基础）
   const now = performance.now();
@@ -246,6 +322,12 @@ globalThis.__v2 = {
   operationZone,
   spaceBoundary,
   orbitCamera,
+  // S2.8 念头/记忆
+  thoughtMesh,
+  memoryMesh,
+  thoughtRefs,
+  thoughtBridge,
+  spawnSampleThought,
   // 工具
   getFrameCount: () => frameCount,
   switchFramework: (id) => {
@@ -264,5 +346,5 @@ globalThis.__v2 = {
     return q.getSummary();
   },
 };
-console.log('[v2] S1 全局调试入口已就绪: globalThis.__v2');
+console.log('[v2] S1 + S2.8 全局调试入口已就绪: globalThis.__v2');
 console.log('[v2] S1 操作提示: 按1-5切换视角, 按F切换认知框架');

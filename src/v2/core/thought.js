@@ -1,11 +1,15 @@
 /**
- * [INPUT]: space.js 坐标系 + layer.js 层归属 + scene-state-store.js 状态中枢
+ * [INPUT]: space.js 坐标系 + layer.js 层归属 (getLayer) + scene-state-store.js 状态中枢
  * [OUTPUT]: Thought类 — 念头/记忆实体（相变、内外结构、占据空间比例、displayScale）
  *   + EntityStateAttachment 契约 — 实体自动携带状态附件
  *   + ThoughtPhase 枚举 — 念头相态（点/晶/相变中/已相变）
  *   + ThoughtMaterial 枚举 — 念头材质（金属/玻璃/木质/液态/晶体）
  * [POS]: src/v2/core/thought.js,L1领域核心层,念头实体基础
  * [PROTOCOL]: 变更时更新此头部,然后检查 ../CLAUDE.md
+ *
+ * v0.8.22-S2.8 fix: _validatePosition 调 layerSystem.getLayerById → getLayer (API 名修正)
+ *                  + 错变量 layerId 改为 this.attachment.layerId
+ *                  + S2.1-S2.7 都是独立实现未跨调, S2.8 集成 main.js 首次跨调暴露这 bug
  *
  * 设计依据: 空间交互设计.md §3念头实体、组件实施顺序 §3 S2
  *   - §3.1 念头 = 占据空间的可塑多面体（不是球）
@@ -296,13 +300,13 @@ export class Thought {
     }
 
     if (layerSystem) {
-      const layer = layerSystem.getLayerById(this.attachment.layerId);
+      const layer = layerSystem.getLayer(this.attachment.layerId);
       if (!layer) {
         throw new Error(`[Thought] layerId "${this.attachment.layerId}" 在 LayerSystem 中不存在`);
       }
       const [vMin, vMax] = layer.verticalRange;
       if (v < vMin || v > vMax) {
-        throw new Error(`[Thought] vertical=${v} 超出 layer ${layerId} 的 [${vMin}, ${vMax}]`);
+        throw new Error(`[Thought] vertical=${v} 超出 layer ${this.attachment.layerId} 的 [${vMin}, ${vMax}]`);
       }
     }
   }
