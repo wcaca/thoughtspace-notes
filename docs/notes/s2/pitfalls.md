@@ -18,3 +18,13 @@
 
 **触发条件**: src/v2/render/thought-mesh.js 完整上线 (S2.6+ 完成 + S2.8 集成 + 实际使用)
 **清理动作**: git rm src/render/instanced-thoughts.js, 同步更新 GEB 文档
+
+---
+
+## dont-throw-on-overrun
+
+**易错点**: S2.10 render-pipeline 帧超预算时 throw 会让 render 半截崩溃
+**时间**: 2026-07-11
+**症状**: 帧 totalMs > 16ms 时如果 throw,后续 stage 不跑、renderer.render 也不调、UI 出现黑屏
+**修复**: 超预算 → ctx.warns 收集 (不 throw) + renderer.render 仍调 + getStats().totalOverruns 暴露;`__v2.renderPipeline.getStats()` 让 AI 看到瓶颈
+**教训**: 排查基础组件的"错误"必须是"可观察的",不可是"中断流程的"
