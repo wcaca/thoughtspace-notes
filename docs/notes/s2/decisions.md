@@ -73,3 +73,12 @@
 **时间**: 2026-07-11
 **原因**: 排查基础需要"可观察的每阶段耗时",固定顺序保证确定性,priority 在阶段内允许多回调并存;不追求绝对 16ms,而是暴露每阶段耗时让 AI 通过 `__v2.renderPipeline.getStats()` 自排查
 **代价**: 5 阶段硬编码,新增阶段需改 STAGES 常量;阶段预算总和 16ms (1+3+6+4+2) 是经验值,实际负载不均时需要再调
+
+---
+
+## s2-10-pipeline-integration
+
+**决策**: main.js 硬编码 animate() 升级为 RenderPipeline.registerStage() 模式; state→orbitCamera.update(); transform→预留 phase-transition hook (当前 recordCacheAccess 占位)
+**时间**: 2026-07-11
+**原因**: 注册式管线比硬编码流水更可观察 (每阶段计时 + 错误隔离), 符合"排查基础 = 错误可观察"原则
+**代价**: 旧 animate() 里的 lastSnapshotTime 100ms 节流被取消, 改为 pipeline snapshot 阶段每帧调 captureIfNecessary (内部仍会节流)
