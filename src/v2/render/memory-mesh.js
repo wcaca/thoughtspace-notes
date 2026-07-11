@@ -23,7 +23,7 @@
  *   - InstancedMesh 单 draw call
  *   - 容量默认 1000
  *
- * @note(s2, implementation, memory-mesh, since:2026-07-09)
+ * @note(s2, decision, memory-mesh, since:2026-07-09)
  *   S2.7: 记忆渲染层。基于 Thought 类（type=MEMORY 时启用）。
  *   念头通过 startPhaseTransition(MEMORY) 触发相变，本渲染器读 _transient.targetPhase
  *   决定何时切换。render-pipeline 统一调度（避免 thought-mesh / memory-mesh 各自 tick）。

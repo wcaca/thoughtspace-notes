@@ -17,7 +17,7 @@
  *   - 实现最小 update/updateOne API, 让 main.js 调用不抛错
  *   - v2 S2 后续 (thought-mesh.js + memory-mesh.js 实施后) 将替换为 v2 渲染路径
  *
- * @note(s2, fix, v1-stub-revival, since:2026-07-08)
+ * @note(s2, pitfall, v1-stub-revival, since:2026-07-08)
  *   S2.1+ 修复 v1 → v2 迁移期间漏掉的 instanced-thoughts.js。
  *   下一步 v2 thought-mesh.js (S2.6) 实施后, 此 stub 退役, 替换为基于 Thought 类的 v2 渲染。
  */

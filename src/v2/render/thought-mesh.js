@@ -22,7 +22,7 @@
  *   - 容量默认 1000，可配置
  *   - 温度/形变 用 instanced attributes
  *
- * @note(s2, implementation, thought-mesh, since:2026-07-09)
+ * @note(s2, decision, thought-mesh, since:2026-07-09)
  *   S2.6: 念头渲染层。基于 Thought 类（已自动带 EntityStateAttachment）。
  *   接入 phase-transition.js（S2.8）的瞬态层：每帧读 _transient.phaseTransitionProgress
  *   决定形变插值。render-pipeline（S2.10）会统一调度。
