@@ -235,10 +235,17 @@ function makeEnv() {
   };
   // 劫持 appendChild, 自动注册 id
   const wrap = (host) => {
-    const orig = host.appendChild.bind(host);
+    const origAppend = host.appendChild.bind(host);
     host.appendChild = (child) => {
-      const c = orig(child);
+      const c = origAppend(child);
       if (c && c._attrs && c._attrs.id) document._byId[c._attrs.id] = c;
+      return c;
+    };
+    // 劫持 removeChild, 自动注销 id (detach 测试需要)
+    const origRemove = host.removeChild.bind(host);
+    host.removeChild = (child) => {
+      const c = origRemove(child);
+      if (c && c._attrs && c._attrs.id) delete document._byId[c._attrs.id];
       return c;
     };
   };
