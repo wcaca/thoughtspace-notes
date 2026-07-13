@@ -49,6 +49,8 @@ export const STAGES = Object.freeze([
   { name: 'snapshot',  budgetMs: 2  },
 ]);
 
+import { computeExpectedMs, computeOverhead } from './expected-calculator.js';
+
 const FRAME_BUDGET_MS = 16;
 
 // ===== RenderPipeline =====
@@ -258,7 +260,7 @@ export class RenderPipeline {
 
   /**
    * 获取当前 stats
-   * @returns {{totalFrames: number, totalOverruns: number, totalErrors: number, cacheHitRate: number, recentAvgMs: number, recentAvgFps: number, stages: Object, lastFrame: Object|null}}
+   * @returns {{totalFrames: number, totalOverruns: number, totalErrors: number, cacheHitRate: number, recentAvgMs: number, recentAvgFps: number, expectedMs: number, overheadMs: number, overheadPct: number, severity: string, stages: Object, lastFrame: Object|null}}
    */
   getStats() {
     const recent = this._frameHistory.slice(-30);
@@ -282,6 +284,9 @@ export class RenderPipeline {
         maxMs: samples.length ? Math.max(...samples) : 0,
       };
     }
+    // S2.12 理论帧耗时 (expected/overhead) — 让 debug-overlay 直接显示"实际 vs 理论"
+    const { expectedMs } = computeExpectedMs({ stages: this._stages });
+    const { overheadMs, overheadPct, severity } = computeOverhead(recentAvgMs, expectedMs);
     return {
       totalFrames: this._aggregate.totalFrames,
       totalOverruns: this._aggregate.totalOverruns,
@@ -289,6 +294,12 @@ export class RenderPipeline {
       cacheHitRate,
       recentAvgMs,
       recentAvgFps,
+      // S2.12 新增
+      expectedMs,
+      overheadMs,
+      overheadPct,
+      severity,
+      // 旧字段保留
       stages,
       lastFrame: this._frameHistory.length ? this._frameHistory[this._frameHistory.length - 1] : null,
     };

@@ -152,6 +152,15 @@ export class DebugOverlay {
     setText(panel, 'frames', stats.totalFrames);
     setText(panel, 'cache', `${(stats.cacheHitRate * 100).toFixed(0)}%`);
 
+    // S2.12 expected / overhead (实际 vs 理论)
+    if (typeof stats.expectedMs === 'number') {
+      setText(panel, 'expected', stats.expectedMs.toFixed(2));
+      const overheadEl = setText(panel, 'overhead',
+        `${stats.overheadMs?.toFixed(2) ?? '0.00'} (${stats.overheadPct?.toFixed(0) ?? '0'}%)`);
+      if (stats.severity === 'alarm') overheadEl.classList.add('v2-debug-alarm');
+      else if (stats.severity === 'warn') overheadEl.classList.add('v2-debug-warn');
+    }
+
     // 2. 错误 / 越界 (颜色高亮)
     const errEl = setText(panel, 'errors', stats.totalErrors);
     errEl.classList.toggle('v2-debug-alarm', stats.totalErrors > 0);
@@ -254,6 +263,8 @@ export class DebugOverlay {
 <table>
   <tr><td>FPS</td><td data-key="fps">0.0</td></tr>
   <tr><td>ms / frame</td><td data-key="ms">0.00</td></tr>
+  <tr><td>expected</td><td data-key="expected">0.00</td></tr>
+  <tr><td>overhead</td><td data-key="overhead">0.00 (0%)</td></tr>
   <tr><td>frames</td><td data-key="frames">0</td></tr>
   <tr><td>cache hit</td><td data-key="cache">0%</td></tr>
   <tr><td>errors</td><td data-key="errors">0</td></tr>

@@ -276,6 +276,10 @@ function makeMockPipeline(overrides = {}) {
     cacheHitRate: 0.75,
     recentAvgMs: 8.5,
     recentAvgFps: 60.0,
+    expectedMs: 5.0,
+    overheadMs: 3.5,
+    overheadPct: 70,
+    severity: 'warn',
     stages: {
       input:     { budgetMs: 1,  avgMs: 0.4, maxMs: 1.2 },
       state:     { budgetMs: 3,  avgMs: 1.5, maxMs: 3.5 },
