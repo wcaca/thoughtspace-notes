@@ -112,7 +112,8 @@ describe('ExpectedFrameCalculator · S2.12 理论帧耗时', () => {
     it('7. 三档 severity (ok/warn/alarm)', () => {
       expect(computeOverhead(5, 5).severity).toBe('ok');
       expect(computeOverhead(5, 6).severity).toBe('ok');        // overheadPct = -16% < 20%
-      expect(computeOverhead(6, 5).severity).toBe('warn');      // 20%
+      expect(computeOverhead(6, 5).severity).toBe('ok');        // 20% 边界 (不超 20)
+      expect(computeOverhead(6.1, 5).severity).toBe('warn');    // 22% > 20 → warn
       expect(computeOverhead(7.5, 5).severity).toBe('warn');    // 50% 边界
       expect(computeOverhead(7.51, 5).severity).toBe('alarm');  // > 50%
     });
