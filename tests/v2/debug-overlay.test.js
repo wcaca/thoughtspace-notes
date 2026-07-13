@@ -364,7 +364,7 @@ describe('DebugOverlay · S2.11 帧诊断可视化', () => {
       for (const c of n.children) count(c, acc);
       return acc.count;
     };
-    expect(count(panel)).toBe(6 + 2 * STAGES.length);  // 6 总览 + 5 × 2 stage
+    expect(count(panel)).toBe(8 + 2 * STAGES.length);  // 8 总览 (含 expected/overhead) + 5 × 2 stage
   });
 
   it('7. 超 budget stage → v2-debug-alarm class', () => {
