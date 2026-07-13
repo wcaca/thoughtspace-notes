@@ -16,6 +16,11 @@
  *  12. detach 后 getLastStats() 仍能拿最近值 (可读)
  *
  * 配套: src/v2/debug/debug-overlay.js
+ *
+ * 测试策略:
+ *   写一个轻量伪 DOM, 解析 production code 设置的 innerHTML
+ *   (覆盖我们 _ensurePanel / _ensureStyle / _ensureToggleButton 实际生成的格式)。
+ *   这样不需要手维护 data-key 节点列表, 测试代码与 production code 自动同步。
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
@@ -23,18 +28,19 @@ import { DebugOverlay } from '../../src/v2/debug/debug-overlay.js';
 import { STAGES } from '../../src/v2/render/render-pipeline.js';
 
 // ===== 伪 DOM =====
-// 只支持 debug-overlay 真实用到的接口: createElement, getElementById, body/head, querySelector, classList, dataset, textContent, id, appendChild, removeChild, addEventListener
+// 解析 production 真实生成的 innerHTML 格式
 
-function makeNode(tag = 'div', parent = null) {
+function makeNode(tag = 'div') {
   const node = {
     tagName: tag.toUpperCase(),
-    parentNode: parent,
+    parentNode: null,
     children: [],
     _classSet: new Set(),
     _listeners: {},
     _attrs: {},
+    _dataset: {},
     innerHTML: '',
-    textContent: '',
+    _textContent: '',
     get classList() {
       return {
         add: (c) => this._classSet.add(c),
@@ -53,14 +59,13 @@ function makeNode(tag = 'div', parent = null) {
     set id(v) { this._attrs.id = v; },
     get title() { return this._attrs.title; },
     set title(v) { this._attrs.title = v; },
+    get textContent() { return this._textContent; },
+    set textContent(v) { this._textContent = String(v); },
     addEventListener(type, fn) {
       (this._listeners[type] ||= []).push(fn);
     },
     appendChild(child) {
-      if (typeof child === 'string') {
-        // textNode-like
-        return child;
-      }
+      if (typeof child === 'string') return child;
       child.parentNode = this;
       this.children.push(child);
       return child;
@@ -80,11 +85,20 @@ function makeNode(tag = 'div', parent = null) {
   return node;
 }
 
+// 把 attr="value" attr2="value2" 解析进 _attrs
+function parseAttrs(s) {
+  const out = {};
+  const re = /(\w[\w-]*)\s*=\s*"([^"]*)"/g;
+  let m;
+  while ((m = re.exec(s)) !== null) {
+    out[m[1]] = m[2];
+  }
+  return out;
+}
+
 function findBySel(root, sel) {
-  // 支持: [data-key="X"] / #id / tag
   if (sel.startsWith('[data-key="') && sel.endsWith('"]')) {
-    const key = sel.slice(11, -2);
-    return findByDataKey(root, key);
+    return findByDataKey(root, sel.slice(11, -2));
   }
   if (sel.startsWith('#')) {
     return findById(root, sel.slice(1));
@@ -108,55 +122,127 @@ function findByDataKey(root, key) {
   return null;
 }
 
-// 简易 HTML 解析 (只支持我们 debug-overlay 自己生成的 innerHTML 格式)
-function parseHtml(html) {
-  // 我们生成的 innerHTML 都很规则, 用正则构造节点
-  // 不用 DOMParser, 因为是测试自己生成的, 我们手 parse
-  const root = makeNode('fragment');
-  // 1. data-key 单标签: <tr><td>X</td><td data-key="Y">V</td></tr>
-  const dataKeyRe = /<(\w+)([^>]*data-key="([^"]+)"[^>]*)>([^<]*)<\/\1>/g;
-  let m;
-  while ((m = dataKeyRe.exec(html)) !== null) {
-    const [, tag, , key, text] = m;
-    const el = makeNode(tag);
-    el._attrs['data-key'] = key;
-    el.textContent = text;
-    root.children.push(el);
+// 解析 production innerHTML → 子节点
+// 覆盖 _ensurePanel 实际生成的格式:
+//   <div class="...">text</div>
+//   <table>...<tr><td>label</td><td data-key="X">V</td></tr>...</table>
+function parseInnerHTML(parent, html) {
+  html = html.trim();
+  if (!html) return;
+
+  // 策略: 找标签 + 嵌套 + textContent
+  // 简化: 用单趟 scanner
+  let i = 0;
+  while (i < html.length) {
+    // 跳过空白
+    while (i < html.length && /\s/.test(html[i])) i++;
+    if (i >= html.length) break;
+
+    if (html[i] !== '<') {
+      // text node
+      const next = html.indexOf('<', i);
+      const text = html.slice(i, next === -1 ? html.length : next);
+      if (text.trim()) {
+        const tn = makeNode('#text');
+        tn._textContent = text.trim();
+        parent.appendChild(tn);
+      }
+      i = next === -1 ? html.length : next;
+      continue;
+    }
+
+    // 读 tag
+    const end = html.indexOf('>', i);
+    if (end === -1) break;
+    const tagStr = html.slice(i + 1, end);
+    i = end + 1;
+
+    // 自闭合
+    if (tagStr.endsWith('/')) {
+      const tagName = tagStr.slice(0, -1).split(/\s+/)[0].toLowerCase();
+      const el = makeNode(tagName);
+      parent.appendChild(el);
+      continue;
+    }
+
+    // 开标签
+    const spaceIdx = tagStr.search(/\s/);
+    const tagName = (spaceIdx === -1 ? tagStr : tagStr.slice(0, spaceIdx)).toLowerCase();
+    const attrStr = spaceIdx === -1 ? '' : tagStr.slice(spaceIdx + 1);
+    const attrs = parseAttrs(attrStr);
+    const el = makeNode(tagName);
+    Object.assign(el._attrs, attrs);
+
+    // 找闭标签
+    const closeTag = `</${tagName}>`;
+    // 嵌套匹配: 用 depth counter
+    let depth = 1;
+    let scan = i;
+    while (scan < html.length && depth > 0) {
+      const nextOpen = html.indexOf(`<${tagName}`, scan);
+      const nextClose = html.indexOf(closeTag, scan);
+      if (nextClose === -1) break;
+      // nextOpen 必须在 nextClose 前才计为嵌套
+      if (nextOpen !== -1 && nextOpen < nextClose) {
+        // 确认是开标签 (不是属性里出现 "<tag")
+        const charAfter = html[nextOpen + 1 + tagName.length];
+        if (charAfter === ' ' || charAfter === '>' || charAfter === '/') {
+          depth++;
+          scan = nextOpen + 1 + tagName.length;
+          continue;
+        }
+      }
+      depth--;
+      if (depth === 0) {
+        // 解析 innerHTML (nextOpen 处开始到 nextClose 前)
+        const inner = html.slice(i, nextClose);
+        parseInnerHTML(el, inner);
+        i = nextClose + closeTag.length;
+        break;
+      }
+      scan = nextClose + closeTag.length;
+    }
+    parent.appendChild(el);
   }
-  return root;
+}
+
+// 包装 setText 等, 自动解析 innerHTML
+function makeNodeWithInnerHTML(tag) {
+  const node = makeNode(tag);
+  Object.defineProperty(node, 'innerHTML', {
+    get() { return node._innerHTML; },
+    set(v) {
+      node._innerHTML = v;
+      // 清空 children
+      node.children = [];
+      // 重新解析
+      parseInnerHTML(node, v);
+    },
+  });
+  return node;
 }
 
 function makeEnv() {
-  const body = makeNode('body');
-  const head = makeNode('head');
-  body.parentNode = head.parentNode = null;
-  const allElements = [];
+  const body = makeNodeWithInnerHTML('body');
+  const head = makeNodeWithInnerHTML('head');
   const document = {
     body, head,
     _byId: {},
     createElement(tag) {
-      const el = makeNode(tag);
-      return el;
+      return makeNodeWithInnerHTML(tag);
     },
-    getElementById(id) {
-      return this._byId[id] || null;
-    },
+    getElementById(id) { return this._byId[id] || null; },
   };
-  // body.appendChild 自动注册到 _byId
-  const origBodyAppend = body.appendChild.bind(body);
-  body.appendChild = (child) => {
-    const c = origBodyAppend(child);
-    if (c && c._attrs && c._attrs.id) document._byId[c._attrs.id] = c;
-    return c;
+  // 劫持 appendChild, 自动注册 id
+  const wrap = (host) => {
+    const orig = host.appendChild.bind(host);
+    host.appendChild = (child) => {
+      const c = orig(child);
+      if (c && c._attrs && c._attrs.id) document._byId[c._attrs.id] = c;
+      return c;
+    };
   };
-  const origHeadAppend = head.appendChild.bind(head);
-  head.appendChild = (child) => {
-    const c = origHeadAppend(child);
-    if (c && c._attrs && c._attrs.id) document._byId[c._attrs.id] = c;
-    return c;
-  };
-  // 模拟 querySelector for panel: 因为我们的 querySelector 走 root, 但 panel.appendChild 出来的节点是 panel 的 children, 走 root.querySelector 时 panel 自己有 children
-  // 已经够了, 因为 findByDataKey 是递归
+  wrap(body); wrap(head);
   return {
     document,
     window: {
@@ -216,10 +302,10 @@ describe('DebugOverlay · S2.11 帧诊断可视化', () => {
   it('2. attach/detach 幂等', () => {
     const overlay = new DebugOverlay(mockPipeline, { env });
     overlay.attach();
-    overlay.attach();  // 第二次不抛
+    overlay.attach();
     expect(overlay._attached).toBe(true);
     overlay.detach();
-    overlay.detach();  // 第二次不抛
+    overlay.detach();
     expect(overlay._attached).toBe(false);
   });
 
@@ -253,29 +339,21 @@ describe('DebugOverlay · S2.11 帧诊断可视化', () => {
     const overlay = new DebugOverlay(mockPipeline, { env });
     overlay.attach();
     overlay.setVisible(true);
-    // _refreshDom 内部用 panel.querySelector('[data-key=...]'), 我们的伪 DOM 解析了 innerHTML 但只在 _refreshDom 调用 setText 时
-    // 实际上 _ensurePanel 写了 innerHTML 但我们的伪 DOM 不解析 children, 改为手动注入子节点
-    const panel = env.document.getElementById('v2-debug-overlay-panel');
-    // 注入 5 阶段 + 5 总览行的 data-key 节点 (模拟 _ensurePanel 的效果)
-    const dataKeys = [
-      'fps', 'ms', 'frames', 'cache', 'errors', 'overruns',
-      ...STAGES.map(s => `stage-${s.name}-ms`),
-      ...STAGES.map(s => `stage-${s.name}-max`),
-    ];
-    for (const key of dataKeys) {
-      const cell = makeNode('td');
-      cell._attrs['data-key'] = key;
-      cell.textContent = '0';
-      panel.appendChild(cell);
-    }
     overlay._refreshDom();
 
-    // 验证通过 getStats mock 拿到的值
     expect(mockPipeline.getStats).toHaveBeenCalled();
-    // 验证 last stats 已记录
     const captured = overlay.getLastStats();
     expect(captured.totalFrames).toBe(100);
     expect(captured.recentAvgFps).toBe(60.0);
+    // panel 内部所有 5 阶段 + 6 总览 cell 都被 setText 更新过
+    const panel = env.document.getElementById('v2-debug-overlay-panel');
+    // 找所有 data-key 节点
+    const count = (n, acc = { count: 0 }) => {
+      if (n._attrs && n._attrs['data-key']) acc.count++;
+      for (const c of n.children) count(c, acc);
+      return acc.count;
+    };
+    expect(count(panel)).toBe(6 + 2 * STAGES.length);  // 6 总览 + 5 × 2 stage
   });
 
   it('7. 超 budget stage → v2-debug-alarm class', () => {
@@ -291,11 +369,10 @@ describe('DebugOverlay · S2.11 帧诊断可视化', () => {
     const overlay = new DebugOverlay(pipeline, { env });
     overlay.attach();
     overlay.setVisible(true);
-    const panel = env.document.getElementById('v2-debug-overlay-panel');
-    const renderCell = makeNode('td');
-    renderCell._attrs['data-key'] = 'stage-render-ms';
-    panel.appendChild(renderCell);
     overlay._refreshDom();
+    const panel = env.document.getElementById('v2-debug-overlay-panel');
+    const renderCell = findByDataKey(panel, 'stage-render-ms');
+    expect(renderCell).not.toBeNull();
     expect(renderCell.classList.contains('v2-debug-alarm')).toBe(true);
   });
 
@@ -304,12 +381,9 @@ describe('DebugOverlay · S2.11 帧诊断可视化', () => {
     const overlay = new DebugOverlay(pipeline, { env });
     overlay.attach();
     overlay.setVisible(true);
-    const panel = env.document.getElementById('v2-debug-overlay-panel');
-    const errCell = makeNode('td');
-    errCell._attrs['data-key'] = 'errors';
-    errCell.textContent = '0';
-    panel.appendChild(errCell);
     overlay._refreshDom();
+    const panel = env.document.getElementById('v2-debug-overlay-panel');
+    const errCell = findByDataKey(panel, 'errors');
     expect(errCell.textContent).toBe('3');
     expect(errCell.classList.contains('v2-debug-alarm')).toBe(true);
   });
@@ -319,12 +393,9 @@ describe('DebugOverlay · S2.11 帧诊断可视化', () => {
     const overlay = new DebugOverlay(pipeline, { env });
     overlay.attach();
     overlay.setVisible(true);
-    const panel = env.document.getElementById('v2-debug-overlay-panel');
-    const orCell = makeNode('td');
-    orCell._attrs['data-key'] = 'overruns';
-    orCell.textContent = '0';
-    panel.appendChild(orCell);
     overlay._refreshDom();
+    const panel = env.document.getElementById('v2-debug-overlay-panel');
+    const orCell = findByDataKey(panel, 'overruns');
     expect(orCell.textContent).toBe('2');
     expect(orCell.classList.contains('v2-debug-warn')).toBe(true);
   });
@@ -354,12 +425,6 @@ describe('DebugOverlay · S2.11 帧诊断可视化', () => {
     const overlay = new DebugOverlay(mockPipeline, { env });
     overlay.attach();
     overlay.setVisible(true);
-    const panel = env.document.getElementById('v2-debug-overlay-panel');
-    for (const key of ['fps', 'ms', 'frames', 'cache', 'errors', 'overruns']) {
-      const cell = makeNode('td');
-      cell._attrs['data-key'] = key;
-      panel.appendChild(cell);
-    }
     overlay._refreshDom();
     const captured = overlay.getLastStats();
     overlay.detach();
