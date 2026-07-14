@@ -29,10 +29,18 @@ const baseStats = () => ({
   stages: STAGE_NAMES.map((name) => ({ name, ms: 0, overruns: 0, errors: 0 })),
 });
 
+// RenderPipeline 必填 renderer/camera/scene (指向 any non-null 即可)
+const makePipeline = () => {
+  const stub = { domElement: {}, getPixelRatio: () => 1 };
+  const cam = { isPerspectiveCamera: true, position: { x: 0, y: 0, z: 0 }, updateProjectionMatrix: () => {} };
+  const sc = { isScene: true, children: [] };
+  return new RenderPipeline({ renderer: stub, camera: cam, scene: sc, snapshotStore: null });
+};
+
 describe('main.js 集成契约 (S2.11 + S2.12 装配路径)', () => {
   it('1. 模拟 main.js 装配: RenderPipeline + DebugOverlay + toggleDebug 三件套', () => {
     // 模拟 main.js 第 6 节装配路径
-    const pipeline = new RenderPipeline({ snapshotStore: null });
+    const pipeline = makePipeline();
     pipeline.start = vi.fn(); // 不真起 RAF
     const overlay = new DebugOverlay(pipeline, { visible: false });
     overlay.attach = vi.fn();
@@ -53,7 +61,7 @@ describe('main.js 集成契约 (S2.11 + S2.12 装配路径)', () => {
   });
 
   it('2. RenderPipeline 默认有 getStats() 满足 DebugOverlay 构造要求', () => {
-    const pipeline = new RenderPipeline({ snapshotStore: null });
+    const pipeline = makePipeline();
     // DebugOverlay 构造会校验 getStats 必须是 function
     expect(() => new DebugOverlay(pipeline)).not.toThrow();
     const stats = pipeline.getStats();
@@ -64,7 +72,7 @@ describe('main.js 集成契约 (S2.11 + S2.12 装配路径)', () => {
   });
 
   it('3. pipelineStats() 返回 S2.12 扩展字段 (expectedMs / overheadMs / overheadPct / severity)', () => {
-    const pipeline = new RenderPipeline({ snapshotStore: null });
+    const pipeline = makePipeline();
     // 不推帧, 验证 stats 默认字段 (S2.12 expected-calculator 提供)
     const stats = pipeline.getStats();
     expect(typeof stats.expectedMs).toBe('number');
@@ -115,7 +123,7 @@ describe('main.js 集成契约 (S2.11 + S2.12 装配路径)', () => {
       addEventListener: vi.fn(),
     };
 
-    const pipeline = new RenderPipeline({ snapshotStore: null });
+    const pipeline = makePipeline();
     const overlay = new DebugOverlay(pipeline, {
       visible: true,
       env: { document: doc, window: win, raf: win.requestAnimationFrame },
