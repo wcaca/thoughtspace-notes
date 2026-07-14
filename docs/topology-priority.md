@@ -81,6 +81,7 @@
 | `2026-07-07-topology-sim-design.md` | 🔵 沉淀 | 2026-07-07 | src/topology/cube-camera.js + convex-hull.js + src/sim/force-3d.js | 力导向仿真+凸包+魔方相机;force-3d 合并治理完成 |
 | `2026-07-07-render-layer-design.md` | 🔵 沉淀 | 2026-07-07 | src/render/* (all files) | 渲染层 umbrella:视角总线/面板栈/3D 实体/工具/横切 |
 | `2026-07-07-feature-flag-system-design.md` | 🟡 焦点 | 2026-07-07 | src/runtime/flags/* (all files) | Feature Flag 三态分离 + 回归测试集成 + 5 状态生命周期 |
+| `2026-07-11-debug-overlay-pipeline-stats-design.md` | 🔵 沉淀 | 2026-07-11 | src/v2/debug/debug-overlay.js + src/v2/render/render-pipeline.js + expected-calculator.js + tests/v2/main-integration.test.js | S2.10/11/12 闭环:5 阶段管线 + DOM 可视化 + 理论帧耗时对比 + main.js 集成,583 测试全过 |
 
 ### 2.2 当前 plan 清单与状态
 
