@@ -25,6 +25,12 @@
  *   - __v2.pipelineStats() 返回 totalFrames / totalOverruns / totalErrors / stages 耗时
  *   - 取代原硬编码 animate() (snapshotStore.captureIfNecessary 旧调度)
  *
+ * S2.11/S2.12 验收目标:
+ *   - __v2.debugOverlay 暴露 DebugOverlay 实例 (5Hz stats panel)
+ *   - __v2.toggleDebug() 控制 panel 显隐 (默认隐藏, 启动后 attach)
+ *   - pipelineStats 含 expectedMs / overheadMs / overheadPct / severity 字段
+ *   - 按 `~` 键或 `__v2.toggleDebug()` 切换可见
+ *
  * @note(s1, decision, v2-main, since:2026-07-08)
  *   S1集成入口：空间本体阶段全部组件接入。
  *   S0骨架升级为S1完整实现，保留全局调试入口。
@@ -38,6 +44,11 @@
  *   S2.10 集成：main.js 硬编码 animate() 升级为 RenderPipeline.registerStage()。
  *   阶段分配：state 阶段调 orbitCamera.update(), transform 阶段预留 phase-transition hook (当前 recordCacheAccess 占位)。
  *   暴露 renderPipeline + pipelineStats() 给 AI 排查。
+ *
+ * @note(s2, decision, s2-11-12-debug-integration, since:2026-07-14)
+ *   S2.11 + S2.12 集成：DebugOverlay 默认隐藏 + 启动后 attach，让 5Hz stats 持续采样
+ *   （隐藏时不渲染 DOM，attach 只采集数据；show 出来就是"最近一帧"的状态，不跳 0）。
+ *   __v2.toggleDebug() 与键盘 `~` 互备，AI console 一行就能进排查模式。
  */
 import * as THREE from 'three';
 import { SceneStateStore } from './core/scene-state-store.js';
@@ -61,6 +72,7 @@ import { SpaceBoundary } from './render/space-boundary.js';
 import { ThoughtMeshRenderer } from './render/thought-mesh.js';
 import { MemoryMeshRenderer } from './render/memory-mesh.js';
 import { RenderPipeline } from './render/render-pipeline.js';
+import { DebugOverlay } from './debug/debug-overlay.js';
 import { ThoughtBridge, createThoughtBridge } from './persistence/thought-bridge.js';
 import {
   Thought,
@@ -293,6 +305,13 @@ console.log('[v2] S2.10 render-pipeline 已启动', {
   snapshot: !!snapshotStore,
 });
 
+// ===== 6.5 DebugOverlay (S2.11 可视化 + S2.12 期望值对比) =====
+// @note(s2, decision, debug-overlay-integration, since:2026-07-14)
+//   默认隐藏, 启动后 attach() 持续采样 stats 到 panel。
+//   toggleDebug() 暴露给 __v2, AI/开发者用 console 切换或按 ~ 键 (DebugOverlay 内部已绑)。
+const debugOverlay = new DebugOverlay(renderPipeline, { visible: false });
+debugOverlay.attach();
+
 // ===== 7. 窗口适配 =====
 window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth / window.innerHeight;
@@ -337,6 +356,9 @@ globalThis.__v2 = {
   // S2.10 渲染管线
   renderPipeline,
   pipelineStats: () => renderPipeline.getStats(),
+  // S2.11/S2.12 Debug 可视化
+  debugOverlay,
+  toggleDebug: () => debugOverlay.toggle(),
   // 工具
   getFrameCount: () => renderPipeline._frameCount,
   switchFramework: (id) => {
