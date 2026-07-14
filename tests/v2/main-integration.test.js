@@ -67,8 +67,10 @@ describe('main.js 集成契约 (S2.11 + S2.12 装配路径)', () => {
     const stats = pipeline.getStats();
     expect(stats).toBeDefined();
     expect(typeof stats.totalFrames).toBe('number');
-    expect(Array.isArray(stats.stages)).toBe(true);
-    expect(stats.stages.length).toBe(STAGES.length);
+    // stages 是 { input: {budgetMs, avgMs, maxMs}, state: ..., ... } (S2.12 实现)
+    expect(typeof stats.stages).toBe('object');
+    expect(stats.stages).not.toBeNull();
+    expect(Object.keys(stats.stages).length).toBe(STAGES.length);
   });
 
   it('3. pipelineStats() 返回 S2.12 扩展字段 (expectedMs / overheadMs / overheadPct / severity)', () => {
@@ -87,7 +89,19 @@ describe('main.js 集成契约 (S2.11 + S2.12 装配路径)', () => {
       const el = {
         id,
         className: '',
-        classList: { add: vi.fn(), remove: vi.fn(), contains: () => false },
+        classList: {
+          _set: new Set(),
+          add: vi.fn(function (cls) { this._set.add(cls); }),
+          remove: vi.fn(function (cls) { this._set.delete(cls); }),
+          contains: vi.fn(function (cls) { return this._set.has(cls); }),
+          toggle: vi.fn(function (cls, force) {
+            if (force === true) { this._set.add(cls); return true; }
+            if (force === false) { this._set.delete(cls); return false; }
+            if (this._set.has(cls)) { this._set.delete(cls); return false; }
+            this._set.add(cls);
+            return true;
+          }),
+        },
         appendChild: vi.fn(),
         removeChild: vi.fn(),
         setAttribute: vi.fn(),
