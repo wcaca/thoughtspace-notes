@@ -82,6 +82,7 @@
 | `2026-07-07-render-layer-design.md` | 🔵 沉淀 | 2026-07-07 | src/render/* (all files) | 渲染层 umbrella:视角总线/面板栈/3D 实体/工具/横切 |
 | `2026-07-07-feature-flag-system-design.md` | 🟡 焦点 | 2026-07-07 | src/runtime/flags/* (all files) | Feature Flag 三态分离 + 回归测试集成 + 5 状态生命周期 |
 | `2026-07-11-debug-overlay-pipeline-stats-design.md` | 🔵 沉淀 | 2026-07-11 | src/v2/debug/debug-overlay.js + src/v2/render/render-pipeline.js + expected-calculator.js + tests/v2/main-integration.test.js | S2.10/11/12 闭环:5 阶段管线 + DOM 可视化 + 理论帧耗时对比 + main.js 集成,583 测试全过 |
+| `2026-07-15-quick-add-panel-design.md` | 🟡 焦点 | 2026-07-15 | (待实做) src/v2/interaction/quick-add-panel.js + tests/v2/quick-add-panel.test.js | S2.13 计划:用户首次与 v2 交互入口,3 步流程(按钮→文字→层),N 键快捷,S2.14 入场动画前置 |
 
 ### 2.2 当前 plan 清单与状态
 
@@ -336,7 +337,7 @@
 | 🔴 孤儿数量 | 0-2 个 | **0 个**（zone vs layer 关系已决策）|
 | ⚪ 废弃数量 | 历史保留,新增应少见 | **0 个**（§3 代码文件表无 ⚪ 已废弃,仅 spec 表 phase-0 为 ⚪）|
 | 🟢 底座数量 | 10-20 个（稳定底座）| **32 个**（实际统计值）|
-| 🔵 沉淀数量 | 30-60 个（稳定主体）| **79 个 (+src/v2/render/expected-calculator.js, S2.12 实做)**（+src/v2/debug/debug-overlay.js, S2.11 实做）|
+| 🔵 沉淀数量 | 30-60 个（稳定主体）| **80 个 (+1 S2.13 quick-add-panel 计划 2026-07-15, 主体 79 不变: S2.12 expected-calculator + S2.11 debug-overlay)**|
 
 > **当前健康**：健康。🟡 焦点从 23 个减到 10 个(13 个 check-* 脚本沉淀),🔴 孤儿清零。P1-2 机器检测已接入,健康指标自动校验。
 
