@@ -1,6 +1,6 @@
 /**
  * [INPUT]: three.js, S1全部组件（core+render+persistence+interaction）+ S2 thought/memory 实体（core/thought.js + render/thought-mesh.js + render/memory-mesh.js + persistence/thought-bridge.js）
- * [OUTPUT]: v2 S1可运行入口 + S2.8 念头/记忆实体集成 (3 个示例 Thought 可视化 + thought-bridge 接入)
+ * [OUTPUT]: v2 S1可运行入口 + S2.8 念头/记忆实体集成 + S2.10 渲染管线 + S2.11/12 Debug 可视化 + S2.13 Quick Add UI (3 个示例 Thought + thought-bridge + QuickAddPanel 启动 + N 键)
  * [POS]: src/v2/main.js,v2应用入口,被index.html的bootstrap脚本动态加载
  * [PROTOCOL]: 变更时更新此头部,然后检查 ../CLAUDE.md
  *
@@ -312,6 +312,20 @@ console.log('[v2] S2.10 render-pipeline 已启动', {
 const debugOverlay = new DebugOverlay(renderPipeline, { visible: false });
 debugOverlay.attach();
 
+// ===== 6.6 QuickAddPanel (S2.13 念头快速录入 UI) =====
+// @note(s2, decision, quick-add-integration, since:2026-07-16)
+//   用户可见的念头入口。 按 N 键开/关, 点击 [+ 念头] 按钮也能打开。
+//   提交后委托给 spawnSampleThought (与示例念头同路径, S3 接入 action-router 后换).
+import { QuickAddPanel } from './interaction/quick-add-panel.js';
+const quickAddPanel = new QuickAddPanel({
+  layers: layerSystem.getLayers().map(l => ({ id: l.id, name: l.name })),
+  onAdd: async ({ text, layerId }) => {
+    const t = spawnSampleThought({ content: text, layerId });
+    return { ok: true, thought: t };
+  },
+});
+quickAddPanel.attach();
+
 // ===== 7. 窗口适配 =====
 window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth / window.innerHeight;
@@ -359,6 +373,9 @@ globalThis.__v2 = {
   // S2.11/S2.12 Debug 可视化
   debugOverlay,
   toggleDebug: () => debugOverlay.toggle(),
+  // S2.13 Quick Add
+  quickAdd: quickAddPanel,
+  toggleQuickAdd: () => quickAddPanel.toggle(),
   // 工具
   getFrameCount: () => renderPipeline._frameCount,
   switchFramework: (id) => {
