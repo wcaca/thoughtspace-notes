@@ -219,8 +219,10 @@ function spawnSampleThought(opts = {}) {
     space,
     layerSystem,
   });
-  // 设为晶体态 (默认 SEED)
-  t.tickPhaseTransition(ThoughtPhase.CRYSTAL);
+  // 设为晶体态 — 走 SEED → CRYSTAL 入场动画 (0.8s, 由 render-pipeline 的 animation 阶段推进)
+  // S2.14 修复: 之前用 tickPhaseTransition(CRYSTAL) 直接 progress=1 (瞬移), 无动画
+  //   改用 startPhaseTransition 让 thought 从 SEED 起步, render-pipeline 每帧推进
+  t.startPhaseTransition(ThoughtPhase.CRYSTAL);
   thoughtRefs.set(t.id, t);
   thoughtMesh.upsert(t, { viewVertical: 0.5 });
   return t;

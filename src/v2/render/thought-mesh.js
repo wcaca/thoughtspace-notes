@@ -226,9 +226,24 @@ export class ThoughtMeshRenderer {
 
     // 2. 缩放 = displayScale（近大远小）
     const displayScale = thought.computeDisplayScale({ viewVertical });
-    // 相变瞬态：进行中时 scale 略小（收缩感）
+    // 相变瞬态视觉:
+    //   - SEED 起步 (progress=0): scale=0 (隐) → 进度 → 1 时 scale → 1.0 (爆裂出现)
+    //   - 其他相变中 (0<progress<1): scale 0.7 → 1.0 (收缩感)
+    //   - 已完成 (progress=1): scale=1.0
+    // S2.14 入场动画核心: spawn 改用 startPhaseTransition 后, SEED→CRYSTAL 0.8s 推进时
+    //   scale 从 0 弹到 1, 给用户"念头从无到有"的视觉反馈.
+    const currentPhase = thought._transient?.currentPhase ?? ThoughtPhase.SEED;
     const phaseProg = thought._transient?.phaseTransitionProgress ?? 0;
-    const phaseScaleMod = phaseProg < 1 ? 0.7 + 0.3 * phaseProg : 1.0;
+    let phaseScaleMod;
+    if (currentPhase === ThoughtPhase.SEED) {
+      // SEED 起步: scale=0, 进度→1 时 scale→1.0 (爆裂)
+      phaseScaleMod = phaseProg;
+    } else if (phaseProg < 1) {
+      // 其他相变中: 0.7 → 1.0 收缩感
+      phaseScaleMod = 0.7 + 0.3 * phaseProg;
+    } else {
+      phaseScaleMod = 1.0;
+    }
     const finalScale = displayScale * phaseScaleMod;
     this._tempScale.set(finalScale, finalScale, finalScale);
 
