@@ -218,10 +218,11 @@ function spawnSampleThought(opts = {}) {
     position: opts.position || { vertical: 0.5, radial: 0.4, orbital: Math.random() * Math.PI * 2 },
     space,
     layerSystem,
+    // S2.14: 显式 phase=SEED 起步, 走 startPhaseTransition 走 SEED → CRYSTAL 动画
+    //  之前用 tickPhaseTransition(CRYSTAL) 直接 progress=1 (瞬移), 无入场动画
+    config: { phase: ThoughtPhase.SEED },
   });
-  // 设为晶体态 — 走 SEED → CRYSTAL 入场动画 (0.8s, 由 render-pipeline 的 animation 阶段推进)
-  // S2.14 修复: 之前用 tickPhaseTransition(CRYSTAL) 直接 progress=1 (瞬移), 无动画
-  //   改用 startPhaseTransition 让 thought 从 SEED 起步, render-pipeline 每帧推进
+  // 走 SEED → CRYSTAL 入场动画 (0.8s, render-pipeline tickPhaseTransitions 每帧推进)
   t.startPhaseTransition(ThoughtPhase.CRYSTAL);
   thoughtRefs.set(t.id, t);
   thoughtMesh.upsert(t, { viewVertical: 0.5 });
