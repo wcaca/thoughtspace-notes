@@ -1,6 +1,16 @@
 /**
  * DebugOverlay (S2.11)
  *
+ * [INPUT]: RenderPipeline 实例 (供 getStats()), 可选 opts (visible / refreshMs / env)
+ * [OUTPUT]: DebugOverlay 类 — render-pipeline stats 可视化 (FPS / ms / 5 stage / cache / errors)
+ *   - attach() / detach() — 生命周期, 5Hz 采样, DOM 创建一次不再重建
+ *   - toggle() / setVisible() / isVisible() — 显隐
+ *   - getLastStats() — 最近一帧的 stats 快照 (与屏幕同步)
+ *   - 默认隐藏, 按 `~` (反引号) 或点 [⏱] 按钮切换
+ *   - console fallback: 无 DOM env 时降级 console.log, 不拋错
+ * [POS]: src/v2/debug/debug-overlay.js, L3 调试层, S2.11 排查可视化, 被 main.js 装配
+ * [PROTOCOL]: 变更时更新此头部, 然后检查 ../CLAUDE.md
+ *
  * 把 RenderPipeline 的 stats 可视化到屏幕。
  *
  * 目标:

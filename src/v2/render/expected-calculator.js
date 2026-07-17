@@ -1,6 +1,15 @@
 /**
  * ExpectedFrameCalculator (S2.12)
  *
+ * [INPUT]: 实测 callback 数 (getExpectedMs({callbackCount}))
+ * [OUTPUT]: ExpectedFrameCalculator 类 — 理论帧耗时计算 (与实际 ms 对比得 overhead)
+ *   - getExpectedMs({callbackCount}) — 根据 5 阶段经验常数 + 实测回调数, 返 ms
+ *   - STAGE_COSTS (类静态) — 5 阶段经验常数 (input 0.3 / state 1.0 / transform 1.5 / render 2.0 / snapshot 0.2)
+ *   - 用于 DebugOverlay (S2.11) 展示 "实际 vs 理论" 差值
+ *   - 纯计算函数, 无副作用
+ * [POS]: src/v2/render/expected-calculator.js, L3 渲染层, S2.12 理论帧耗时, 被 DebugOverlay 调
+ * [PROTOCOL]: 变更时更新此头部, 然后检查 ../CLAUDE.md
+ *
  * 用 5 阶段经验常数 + 实测回调数, 算理论帧耗时。
  * 让 debug-overlay (S2.11) 能直接显示"实际 vs 理论", 瓶颈一目了然。
  *
