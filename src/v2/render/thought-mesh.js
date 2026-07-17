@@ -251,7 +251,8 @@ export class ThoughtMeshRenderer {
     // 6. 形状 code
     this._shapeArr[idx] = this._shapeCode(thought.config?.shape);
 
-    // 7. 相变进度
+    // 7. 相变进度 (SEED 起步 0, 完成后 1)
+    const phaseProg = thought._transient?.phaseTransitionProgress ?? 0;
     this._phaseProgressArr[idx] = phaseProg;
 
     // 8. 颜色（温度色）
