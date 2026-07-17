@@ -232,18 +232,7 @@ export class ThoughtMeshRenderer {
     //   - 已完成 (progress=1): scale=1.0
     // S2.14 入场动画核心: spawn 改用 startPhaseTransition 后, SEED→CRYSTAL 0.8s 推进时
     //   scale 从 0 弹到 1, 给用户"念头从无到有"的视觉反馈.
-    const currentPhase = thought._transient?.currentPhase ?? ThoughtPhase.SEED;
-    const phaseProg = thought._transient?.phaseTransitionProgress ?? 0;
-    let phaseScaleMod;
-    if (currentPhase === ThoughtPhase.SEED) {
-      // SEED 起步: scale=0, 进度→1 时 scale→1.0 (爆裂)
-      phaseScaleMod = phaseProg;
-    } else if (phaseProg < 1) {
-      // 其他相变中: 0.7 → 1.0 收缩感
-      phaseScaleMod = 0.7 + 0.3 * phaseProg;
-    } else {
-      phaseScaleMod = 1.0;
-    }
+    const phaseScaleMod = this._computePhaseScaleMod(thought);
     const finalScale = displayScale * phaseScaleMod;
     this._tempScale.set(finalScale, finalScale, finalScale);
 
@@ -322,6 +311,27 @@ export class ThoughtMeshRenderer {
     for (const t of thoughts) {
       this.upsert(t, params);
     }
+  }
+
+  /**
+   * 计算相变时使用的 scale 乘子 (SEED 弹入 / 相变中收缩 / 完成 1.0).
+   * S2.14: 抽成独立方法以便测试, 避开 Three.js InstancedMesh 矩阵分解怪行为.
+   * @private
+   * @param {Thought} thought
+   * @returns {number} 0.0 ~ 1.0
+   */
+  _computePhaseScaleMod(thought) {
+    const currentPhase = thought._transient?.currentPhase ?? ThoughtPhase.SEED;
+    const phaseProg = thought._transient?.phaseTransitionProgress ?? 0;
+    if (currentPhase === ThoughtPhase.SEED) {
+      // SEED 起步: scale=0, 进度→1 时 scale→1.0 (爆裂)
+      return phaseProg;
+    }
+    if (phaseProg < 1) {
+      // 其他相变中: 0.7 → 1.0 收缩感
+      return 0.7 + 0.3 * phaseProg;
+    }
+    return 1.0;
   }
 
   /**
