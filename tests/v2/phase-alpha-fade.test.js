@@ -134,9 +134,10 @@ describe('ThoughtMeshRenderer _phaseProgressArr 同步 (S2.15 跟 S2.14 一致)'
     const renderer = new ThoughtMeshRenderer({ scene: makeScene() });
     const t = makeThought({ phase: ThoughtPhase.SEED, progress: 0.3, content: 'alpha-test' });
     renderer.upsert(t);
-    expect(renderer._phaseProgressArr[0]).toBe(0.3);
+    // Float32Array 精度限制, 用 closeTo 而非 toBe
+    expect(renderer._phaseProgressArr[0]).toBeCloseTo(0.3, 5);
     t._transient.phaseTransitionProgress = 0.7;
     renderer.upsert(t);
-    expect(renderer._phaseProgressArr[0]).toBe(0.7);
+    expect(renderer._phaseProgressArr[0]).toBeCloseTo(0.7, 5);
   });
 });
