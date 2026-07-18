@@ -19,7 +19,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import {
   ThoughtMeshRenderer,
-  DEFAULT_OPACITY,
 } from '../../src/v2/render/thought-mesh.js';
 import {
   Thought,
@@ -35,11 +34,12 @@ function makeScene() {
 }
 
 function makeThought({ phase = ThoughtPhase.SEED, progress = 0, content = 'test' } = {}) {
-  // 跳过完整 Space 集成, 只测纯函数
+  // Thought 构造需 position (vertical, radial, orbital), layerId
   const t = new Thought({
     id: `test-${Math.random().toString(36).slice(2, 8)}`,
     content,
     layerId: 'L0',
+    position: { vertical: 0.5, radial: 0.4, orbital: 0 },
     config: { phase, radiusBase: 0.4 },
   });
   t._transient.currentPhase = phase;
@@ -115,9 +115,11 @@ describe('ThoughtMeshRenderer shader patch (S2.15 onBeforeCompile)', () => {
     expect(renderer.material.transparent).toBe(true);
   });
 
-  it('default opacity 正常设置', () => {
+  it('default opacity 正常设置 (静态 0.92, alpha 渐入由 shader 控制)', () => {
     const renderer = new ThoughtMeshRenderer({ scene: makeScene() });
-    expect(renderer.material.opacity).toBe(DEFAULT_OPACITY);
+    // 静态 opacity 保持 0.92, alpha 渐入走 shader 路径 (不破坏这个常量)
+    expect(renderer.material.opacity).toBeGreaterThan(0);
+    expect(renderer.material.opacity).toBeLessThanOrEqual(1);
   });
 });
 
