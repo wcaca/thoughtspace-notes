@@ -134,6 +134,37 @@ export class ThoughtMeshRenderer {
       roughness: 0.5,
     });
 
+    // S2.15: onBeforeCompile patch — fragment shader 读 aPhaseProgress 计算 alpha 渐入
+    //   shader 流程: vertex 读 attribute aPhaseProgress → varying 传到 fragment → output_fragment
+    //   gl_FragColor.a *= (0.4 + 0.6 * aPhaseProgress)
+    //   SEED phase progress=0 时 alpha=0.4, progress=1 时 alpha=1.0
+    this.material.onBeforeCompile = (shader) => {
+      // 1. vertex shader 注入: attribute aPhaseProgress + varying vAlphaMod
+      shader.vertexShader = 'attribute float aPhaseProgress;\n' + shader.vertexShader;
+      shader.vertexShader = shader.vertexShader.replace(
+        '#include <common>',
+        `#include <common>
+varying float vAlphaMod;`
+      );
+      shader.vertexShader = shader.vertexShader.replace(
+        '#include <begin_vertex>',
+        `#include <begin_vertex>
+vAlphaMod = 0.4 + 0.6 * aPhaseProgress;`
+      );
+      // 2. fragment shader 注入: varying vAlphaMod + 改 alpha
+      shader.fragmentShader = shader.fragmentShader.replace(
+        '#include <common>',
+        `#include <common>
+varying float vAlphaMod;`
+      );
+      shader.fragmentShader = shader.fragmentShader.replace(
+        '#include <output_fragment>',
+        `#include <output_fragment>
+gl_FragColor.a *= vAlphaMod;`
+      );
+    };
+    this.material.needsUpdate = true;
+
     this.mesh = new THREE.InstancedMesh(this.geometry, this.material, capacity);
     this.mesh.count = 0;
     this.mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
@@ -331,6 +362,29 @@ export class ThoughtMeshRenderer {
     if (phaseProg < 1) {
       // 其他相变中: 0.7 → 1.0 收缩感
       return 0.7 + 0.3 * phaseProg;
+    }
+    return 1.0;
+  }
+
+  /**
+   * S2.15: 相变 alpha 修饰 (0~1) — 跟 scale 互补, 让入场动画有"从透明到实体"感觉
+   *   - SEED 起步 (progress=0): alpha=0 (不可见) → progress=1: alpha=1 (完全可见)
+   *   - 其他相变中 (0<progress<1): alpha 0.4 → 1.0 (变实感)
+   *   - 已完成 (progress=1): alpha=1.0
+   * @private
+   * @param {Thought} thought
+   * @returns {number} 0.0 ~ 1.0
+   */
+  _computePhaseAlphaMod(thought) {
+    const currentPhase = thought._transient?.currentPhase ?? ThoughtPhase.SEED;
+    const phaseProg = thought._transient?.phaseTransitionProgress ?? 0;
+    if (currentPhase === ThoughtPhase.SEED) {
+      // SEED 起步: alpha=0, 进度→1 时 alpha→1.0 (淡入)
+      return phaseProg;
+    }
+    if (phaseProg < 1) {
+      // 其他相变中: 0.4 → 1.0 变实感 (alpha 跟 scale 不同区间)
+      return 0.4 + 0.6 * phaseProg;
     }
     return 1.0;
   }
