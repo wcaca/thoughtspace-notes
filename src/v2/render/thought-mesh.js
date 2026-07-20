@@ -39,6 +39,7 @@ const DEFAULT_BASE_RADIUS = 0.4;
 const TEMP_COLD_COLOR = new THREE.Color(0x4a90e2);   // 冷蓝
 const TEMP_WARM_COLOR = new THREE.Color(0xe94560);   // 热红
 const TEMP_NEUTRAL_COLOR = new THREE.Color(0xc9d6ea); // 中性
+const PHASE_GRAY_COLOR = new THREE.Color(0x808080);  // S2.17 相变起点 (中灰)
 const DEFAULT_OPACITY = 0.92;
 
 // ===== 形状 -> 几何工厂 =====
@@ -287,8 +288,10 @@ gl_FragColor.a *= vAlphaMod;`
     const phaseProg = thought._transient?.phaseTransitionProgress ?? 0;
     this._phaseProgressArr[idx] = phaseProg;
 
-    // 8. 颜色（温度色）
-    this._tempColor.copy(temperatureToColor(temperature));
+    // 8. 颜色（温度色 + S2.17 相变颜色 lerp: SEED 灰 → 真温度色）
+    const trueColor = temperatureToColor(temperature);
+    const phaseColor = this._computePhaseColorMod(thought, trueColor);
+    this._tempColor.copy(phaseColor);
     this.mesh.setColorAt(idx, this._tempColor);
 
     // 标记 attribute 需上传
@@ -403,6 +406,31 @@ gl_FragColor.a *= vAlphaMod;`
       return 0.4 + 0.6 * phaseProg;
     }
     return 1.0;
+  }
+
+  /**
+   * S2.17: 相变颜色 lerp (从灰 → 真温度色) — 让 SEED 起步念头是灰色, 进度→1 时过渡到真温度色
+   *   - SEED 起步 (progress=0): color = GRAY (灰)
+   *   - SEED 中 (0<progress<1): color = lerp(trueColor, GRAY, 1 - easedProg)
+   *   - 其他相变中 (其他 phase, 0<progress<1): color = trueColor (不 lerp, 已经是真色)
+   *   - 已完成 (progress=1): color = trueColor
+   * S2.16: lerp 系数走 ease-out 缓动, 跟 scale/alpha 同步.
+   * @private
+   * @param {Thought} thought
+   * @param {THREE.Color} trueColor - 真温度色
+   * @returns {THREE.Color} 新 Color 实例 (caller copy)
+   */
+  _computePhaseColorMod(thought, trueColor) {
+    const currentPhase = thought._transient?.currentPhase ?? ThoughtPhase.SEED;
+    const linearProg = thought._transient?.phaseTransitionProgress ?? 0;
+    const phaseProg = this._applyPhaseEasing(linearProg);  // S2.16 缓动共享
+    if (currentPhase === ThoughtPhase.SEED && linearProg < 1) {
+      // phaseProg=0 → gray, phaseProg=1 → trueColor
+      // Color.lerp(other, alpha) = this * (1-alpha) + other * alpha
+      // 所以 lerp(trueColor, gray, 1-phaseProg) = trueColor*phaseProg + gray*(1-phaseProg) ✓
+      return trueColor.clone().lerp(PHASE_GRAY_COLOR, 1 - phaseProg);
+    }
+    return trueColor.clone();
   }
 
   /**
