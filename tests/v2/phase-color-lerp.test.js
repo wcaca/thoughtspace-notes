@@ -46,11 +46,10 @@ function makeThought({ phase = ThoughtPhase.SEED, progress = 0, content = 'test'
     layerId: 'default-layer',
     position: { vertical: 0.5, radial: 0.4, orbital: 0 },
   });
-  if (phase !== ThoughtPhase.SEED || progress !== 0) {
-    t._transient = t._transient || {};
-    t._transient.currentPhase = phase;
-    t._transient.phaseTransitionProgress = progress;
-  }
+  // S2.17: 总是覆盖 _transient, 避免 new Thought 默认 phase=CRYSTAL 影响测试
+  t._transient = t._transient || {};
+  t._transient.currentPhase = phase;
+  t._transient.phaseTransitionProgress = progress;
   return t;
 }
 
