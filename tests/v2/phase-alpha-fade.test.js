@@ -58,9 +58,11 @@ describe('ThoughtMeshRenderer _computePhaseAlphaMod (S2.15)', () => {
     expect(renderer._computePhaseAlphaMod(t)).toBe(0);
   });
 
-  it('SEED + 0.5 → 0.5 (淡入中)', () => {
+  it('SEED + 0.5 → easeOutCubic(0.5) ≈ 0.823 (S2.16 缓动后, 非 linear 0.5)', () => {
     const t = makeThought({ phase: ThoughtPhase.SEED, progress: 0.5 });
-    expect(renderer._computePhaseAlphaMod(t)).toBeCloseTo(0.5, 5);
+    // S2.16 引入 ease-out 缓动, 跟 S2.15 _computePhaseAlphaMod 串联
+    // 之前 linear 时代是 0.5, 缓动后是 1 - 0.5^2.5 ≈ 0.823
+    expect(renderer._computePhaseAlphaMod(t)).toBeCloseTo(0.823, 2);
   });
 
   it('SEED + 1 → 1.0 (完全可见)', () => {
@@ -68,9 +70,10 @@ describe('ThoughtMeshRenderer _computePhaseAlphaMod (S2.15)', () => {
     expect(renderer._computePhaseAlphaMod(t)).toBe(1);
   });
 
-  it('CRYSTAL + 0.5 → 0.7 (变实中)', () => {
+  it('CRYSTAL + 0.5 → 0.4 + 0.6 * easeOutCubic(0.5) ≈ 0.894 (S2.16 缓动后)', () => {
     const t = makeThought({ phase: ThoughtPhase.CRYSTAL, progress: 0.5 });
-    expect(renderer._computePhaseAlphaMod(t)).toBeCloseTo(0.7, 5);
+    // S2.16: 0.4 + 0.6 * 0.823 = 0.894 (linear 时代是 0.7)
+    expect(renderer._computePhaseAlphaMod(t)).toBeCloseTo(0.894, 2);
   });
 
   it('CRYSTAL + 1 → 1.0 (稳定)', () => {

@@ -153,7 +153,8 @@ describe('S2.14: spawn phase transition 行为', () => {
       t.tickPhaseTransition(0.4);  // progress=0.5
       // currentPhase 仍 SEED
       expect(t._transient.currentPhase).toBe(ThoughtPhase.SEED);
-      expect(renderer._computePhaseScaleMod(t)).toBeCloseTo(0.5, 5);
+      // S2.16: linear 0.5 → easeOutCubic(0.5) ≈ 0.823
+      expect(renderer._computePhaseScaleMod(t)).toBeCloseTo(0.823, 2);
     });
 
     it('10. CRYSTAL phase + progress=1 → scaleMod=1.0 (完成)', () => {
@@ -180,7 +181,8 @@ describe('S2.14: spawn phase transition 行为', () => {
       t.startPhaseTransition(ThoughtPhase.MEMORY);
       t.tickPhaseTransition(0.4);  // progress=0.5
       // currentPhase=CRYSTAL (未完成), progress=0.5
-      expect(renderer._computePhaseScaleMod(t)).toBeCloseTo(0.85, 5);
+      // S2.16: 0.7 + 0.3 * easeOutCubic(0.5) ≈ 0.7 + 0.247 ≈ 0.947
+      expect(renderer._computePhaseScaleMod(t)).toBeCloseTo(0.947, 2);
     });
 
     it('12. _phaseProgressArr instanced attr 跟 transient 同步', () => {
