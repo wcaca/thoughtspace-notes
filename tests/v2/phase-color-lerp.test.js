@@ -120,14 +120,16 @@ describe('S2.17 _computePhaseColorMod 缓动串联 (eased 0.823 / 0.232 / 0.999)
     expect(result.r).toBeCloseTo(expected_r, 3);
   });
 
-  it('7. SEED + progress=0.9 → gray*0.001 + trueColor*0.999 (eased 后段慢, 几乎全色)', () => {
+  it('7. SEED + progress=0.9 → gray*0.003 + trueColor*0.997 (eased 后段慢, 几乎全色)', () => {
     const thought = makeThought({ phase: ThoughtPhase.SEED, progress: 0.9 });
-    const trueColor = new THREE.Color(0x4a90e2);
+    // 用中性温度色 (R=0.584) 跟 gray (R=0.216) 差 0.368, 大于 0.3 验证
+    const trueColor = temperatureToColor(0.5);  // 中性 sRGB: r=0.584
     const result = renderer._computePhaseColorMod(thought, trueColor);
-    // easeOutCubic(0.9) ≈ 0.999
-    const expected_r = trueColor.r * 0.999 + PHASE_GRAY.r * 0.001;
+    // easeOutCubic(0.9) ≈ 0.997
+    const eased = 1 - Math.pow(0.1, 2.5);  // 0.997
+    const expected_r = trueColor.r * eased + PHASE_GRAY.r * (1 - eased);
     expect(result.r).toBeCloseTo(expected_r, 3);
-    // 验证: 几乎全是真色, 跟 gray 差很大
+    // 验证: 几乎全是真色, 跟 gray 差很大 (> 0.3)
     expect(Math.abs(result.r - PHASE_GRAY.r)).toBeGreaterThan(0.3);
   });
 });
