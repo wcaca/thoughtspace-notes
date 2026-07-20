@@ -30,6 +30,7 @@
 
 import * as THREE from 'three';
 import { ThoughtPhase, ThoughtShape, ThoughtMaterial } from '../core/thought.js';
+import { easeOutCubic } from '../animation/ease.js';
 
 // ===== 视觉参数默认值 =====
 
@@ -346,21 +347,34 @@ gl_FragColor.a *= vAlphaMod;`
   }
 
   /**
+   * S2.16: linear phaseProgress 经过 ease-out 缓动后再返回
+   * 给 _computePhaseScaleMod / _computePhaseAlphaMod 共享
+   * @private
+   * @param {number} linearProg - 0~1 linear tick
+   * @returns {number} 0~1 eased
+   */
+  _applyPhaseEasing(linearProg) {
+    return easeOutCubic(linearProg);
+  }
+
+  /**
    * 计算相变时使用的 scale 乘子 (SEED 弹入 / 相变中收缩 / 完成 1.0).
    * S2.14: 抽成独立方法以便测试, 避开 Three.js InstancedMesh 矩阵分解怪行为.
+   * S2.16: linearProg 走 ease-out 缓动, 让"念头弹出"前快后慢.
    * @private
    * @param {Thought} thought
    * @returns {number} 0.0 ~ 1.0
    */
   _computePhaseScaleMod(thought) {
     const currentPhase = thought._transient?.currentPhase ?? ThoughtPhase.SEED;
-    const phaseProg = thought._transient?.phaseTransitionProgress ?? 0;
+    const linearProg = thought._transient?.phaseTransitionProgress ?? 0;
+    const phaseProg = this._applyPhaseEasing(linearProg);  // S2.16
     if (currentPhase === ThoughtPhase.SEED) {
       // SEED 起步: scale=0, 进度→1 时 scale→1.0 (爆裂)
       return phaseProg;
     }
-    if (phaseProg < 1) {
-      // 其他相变中: 0.7 → 1.0 收缩感
+    if (linearProg < 1) {
+      // 其他相变中: 0.7 → 1.0 收缩感 (缓动后)
       return 0.7 + 0.3 * phaseProg;
     }
     return 1.0;
@@ -371,19 +385,21 @@ gl_FragColor.a *= vAlphaMod;`
    *   - SEED 起步 (progress=0): alpha=0 (不可见) → progress=1: alpha=1 (完全可见)
    *   - 其他相变中 (0<progress<1): alpha 0.4 → 1.0 (变实感)
    *   - 已完成 (progress=1): alpha=1.0
+   * S2.16: 跟 scale 走同一个 ease-out 缓动, scale/alpha 同步.
    * @private
    * @param {Thought} thought
    * @returns {number} 0.0 ~ 1.0
    */
   _computePhaseAlphaMod(thought) {
     const currentPhase = thought._transient?.currentPhase ?? ThoughtPhase.SEED;
-    const phaseProg = thought._transient?.phaseTransitionProgress ?? 0;
+    const linearProg = thought._transient?.phaseTransitionProgress ?? 0;
+    const phaseProg = this._applyPhaseEasing(linearProg);  // S2.16
     if (currentPhase === ThoughtPhase.SEED) {
-      // SEED 起步: alpha=0, 进度→1 时 alpha→1.0 (淡入)
+      // SEED 起步: alpha=0, 进度→1 时 alpha→1.0 (淡入, 缓动后)
       return phaseProg;
     }
-    if (phaseProg < 1) {
-      // 其他相变中: 0.4 → 1.0 变实感 (alpha 跟 scale 不同区间)
+    if (linearProg < 1) {
+      // 其他相变中: 0.4 → 1.0 变实感 (缓动后)
       return 0.4 + 0.6 * phaseProg;
     }
     return 1.0;
