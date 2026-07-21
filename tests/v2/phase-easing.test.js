@@ -32,6 +32,8 @@ import {
 } from '../../src/v2/core/thought.js';
 import {
   easeOutCubic,
+  easeInCubic,
+  easeInOutCubic,
   applyEasing,
   EasingType,
 } from '../../src/v2/animation/ease.js';
@@ -171,5 +173,132 @@ describe('S2.16 _computePhaseAlphaMod 跟 scale 同步缓动', () => {
     const scaleMod = renderer._computePhaseScaleMod(thought);
     const alphaMod = renderer._computePhaseAlphaMod(thought);
     expect(alphaMod).toBeCloseTo(scaleMod, 4);
+  });
+});
+
+// ==================== S2.18 缓动曲线补齐 ====================
+//
+// 验证 easeInCubic / easeInOutCubic 跟 easeOutCubic 对称, applyEasing 真正按 type 分发.
+//
+// 关键设计:
+//   - easeIn(0.5) = 0.5^2.5 ≈ 0.177 (跟 easeOut 的 0.823 互补, 和 = 1)
+//   - easeInOut(0.5) = 0.5 (折点)
+//   - easeIn(0.1) = 0.1^2.5 ≈ 0.0032 (远小于 0.1, 验证"前段慢")
+//   - applyEasing 末识 type 走 ease-out 跟 S2.16 兼容
+
+describe('S2.18 easeInCubic 纯函数', () => {
+  it('1. easeInCubic(0) → 0', () => {
+    expect(easeInCubic(0)).toBe(0);
+  });
+
+  it('2. easeInCubic(1) → 1', () => {
+    expect(easeInCubic(1)).toBe(1);
+  });
+
+  it('3. easeInCubic(0.5) → 约 0.177 (跟 easeOut(0.5) ≈ 0.823 互补, 和=1)', () => {
+    const y = easeInCubic(0.5);
+    expect(y).toBeCloseTo(0.177, 2);
+    // 跟 easeOut 互补 (easeIn(x) + easeOut(x) 严格= 1, 因为 (1-(1-x)^2.5) + x^2.5 = 1)
+    expect(y + easeOutCubic(0.5)).toBeCloseTo(1, 4);
+  });
+
+  it('4. easeInCubic(0.1) → 约 0.003 (前段慢, 0.1 输入仅 0.3% 输出)', () => {
+    const y = easeInCubic(0.1);
+    // 0.1^2.5 = 0.00316
+    expect(y).toBeCloseTo(0.00316, 3);
+    // 验证"前段慢" — 0.1 输入仅 0.3% 输出, 跟 easeOut 相反
+    expect(y).toBeLessThan(0.1);
+  });
+
+  it('5. 单调性: t1<t2 → y1<y2', () => {
+    const samples = [0, 0.1, 0.25, 0.5, 0.75, 0.9, 1];
+    const eased = samples.map(easeInCubic);
+    for (let i = 1; i < eased.length; i++) {
+      expect(eased[i]).toBeGreaterThan(eased[i - 1]);
+    }
+  });
+});
+
+describe('S2.18 easeInOutCubic 纯函数', () => {
+  it('1. easeInOutCubic(0) → 0', () => {
+    expect(easeInOutCubic(0)).toBe(0);
+  });
+
+  it('2. easeInOutCubic(1) → 1', () => {
+    expect(easeInOutCubic(1)).toBe(1);
+  });
+
+  it('3. easeInOutCubic(0.5) → 0.5 (折点, 数学连续)', () => {
+    expect(easeInOutCubic(0.5)).toBeCloseTo(0.5, 4);
+  });
+
+  it('4. easeInOutCubic(0.25) → 约 0.031 (前半 easeIn, 加速前慢)', () => {
+    // 0.5 * (0.5)^2.5 = 0.5 * 0.1768 = 0.0884
+    // 等等: x=0.25 → x*2=0.5 → 0.5^2.5 = 0.1768 → 0.5*0.1768 = 0.0884
+    // 重新计算: x < 0.5, y = 0.5 * (x*2)^2.5 = 0.5 * 0.5^2.5 = 0.5 * 0.1768 = 0.0884
+    // 近似 0.088, 跟 linear 0.25 差 0.16 (“前段慢”验证)
+    const y = easeInOutCubic(0.25);
+    expect(y).toBeCloseTo(0.0884, 2);
+    expect(y).toBeLessThan(0.25);
+  });
+
+  it('5. easeInOutCubic(0.75) → 约 0.912 (后半 easeOut, 减速)', () => {
+    // x=0.75 → x*2=1.5 → 2-1.5=0.5 → 0.5^2.5 = 0.1768 → 1 - 0.5*0.1768 = 0.9116
+    const y = easeInOutCubic(0.75);
+    expect(y).toBeCloseTo(0.9116, 2);
+    expect(y).toBeGreaterThan(0.75);
+  });
+
+  it('6. S 型对称: easeInOut(0.25) + easeInOut(0.75) = 1', () => {
+    const a = easeInOutCubic(0.25);
+    const b = easeInOutCubic(0.75);
+    expect(a + b).toBeCloseTo(1, 4);
+  });
+
+  it('7. 单调性: t1<t2 → y1<y2', () => {
+    const samples = [0, 0.1, 0.25, 0.5, 0.75, 0.9, 1];
+    const eased = samples.map(easeInOutCubic);
+    for (let i = 1; i < eased.length; i++) {
+      expect(eased[i]).toBeGreaterThan(eased[i - 1]);
+    }
+  });
+});
+
+describe('S2.18 applyEasing 分发', () => {
+  it('1. applyEasing(0.5, "linear") → 0.5', () => {
+    expect(applyEasing(0.5, EasingType.LINEAR)).toBe(0.5);
+  });
+
+  it('2. applyEasing(0.5, "ease-out") → 约 0.823 (跟 easeOutCubic 一致)', () => {
+    expect(applyEasing(0.5, EasingType.EASE_OUT)).toBeCloseTo(easeOutCubic(0.5), 4);
+  });
+
+  it('3. applyEasing(0.5, "ease-in") → 约 0.177 (跟 easeInCubic 一致)', () => {
+    expect(applyEasing(0.5, EasingType.EASE_IN)).toBeCloseTo(easeInCubic(0.5), 4);
+  });
+
+  it('4. applyEasing(0.5, "ease-in-out") → 0.5 (折点)', () => {
+    expect(applyEasing(0.5, EasingType.EASE_IN_OUT)).toBeCloseTo(easeInOutCubic(0.5), 4);
+  });
+
+  it('5. applyEasing 默认无 type → ease-out (跟 S2.16 兼容)', () => {
+    expect(applyEasing(0.5)).toBeCloseTo(0.823, 2);
+  });
+
+  it('6. applyEasing 末识 type → ease-out fallback (防 typo 崩溃)', () => {
+    // @ts-ignore - 故意传未识 type
+    expect(applyEasing(0.5, 'ease-bounce-unknown')).toBeCloseTo(0.823, 2);
+  });
+
+  it('7. EasingType 枚举 (4 种)', () => {
+    expect(EasingType.LINEAR).toBe('linear');
+    expect(EasingType.EASE_OUT).toBe('ease-out');
+    expect(EasingType.EASE_IN).toBe('ease-in');
+    expect(EasingType.EASE_IN_OUT).toBe('ease-in-out');
+    expect(Object.keys(EasingType).length).toBe(4);
+  });
+
+  it('8. EasingType 是 frozen 枚举 (不能添字段)', () => {
+    expect(Object.isFrozen(EasingType)).toBe(true);
   });
 });
