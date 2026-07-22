@@ -46,6 +46,9 @@
 
 // ===== 实体类型枚举 =====
 
+// S2.19: 多 phase transition 独立缓动 (跟 S2.18 共享 applyEasing)
+import { applyEasing } from '../animation/ease.js';
+
 export const EntityType = Object.freeze({
   THOUGHT: 'thought',          // 念头
   MEMORY: 'memory',            // 记忆（念头相变后的稳定态）
@@ -277,6 +280,11 @@ export class Thought {
       targetPhase: this.config.phase,
       animationState: null,
       lastRenderFrame: 0,
+      // S2.19: 多 phase transition 独立配置
+      phaseStartTime: 0,         // 相变开始时间戳 (ms), 0=未在变
+      phaseDuration: 0.8,        // 本次相变总时长 (s), 默认 0.8s 跟原行为一致
+      phaseEasing: 'ease-out',   // 本次相变缓动, 默认 ease-out 跟原行为一致
+      phaseDelay: 0,             // 相变延迟 (s), stagger 错开同时触发的多个
     };
   }
 
@@ -329,31 +337,67 @@ export class Thought {
    * 触发相变（异步动画）。
    * 设置瞬态 targetPhase + phaseTransitionProgress=0，由 render-pipeline 推进。
    *
+   * S2.19: 支持独立配置 easing / duration / delay, 让多 thought 同时相变时能 stagger / 选缓动.
+   *   - easing: 'ease-out' (默认, 跟 S2.16 行为一致) | 'ease-in' | 'ease-in-out' | 'linear'
+   *   - duration: 相变时长 (s), 默认 0.8s
+   *   - delay: 触发后延迟 (s), 0=立刻, >0=排队, 用于 stagger
+   *
    * @param {string} targetPhase - ThoughtPhase 枚举值
+   * @param {Object} [opts] - S2.19 多相变独立配置
+   * @param {string} [opts.easing='ease-out']
+   * @param {number} [opts.duration=0.8]
+   * @param {number} [opts.delay=0]
    */
-  startPhaseTransition(targetPhase) {
+  startPhaseTransition(targetPhase, opts = {}) {
     if (!Object.values(ThoughtPhase).includes(targetPhase)) {
       throw new Error(`[Thought] startPhaseTransition: targetPhase "${targetPhase}" 不在 ThoughtPhase 枚举中`);
     }
-    if (this._transient.targetPhase === targetPhase && this._transient.phaseTransitionProgress === 0) {
+    const { easing = 'ease-out', duration = 0.8, delay = 0 } = opts;
+    if (this._transient.targetPhase === targetPhase
+        && this._transient.phaseTransitionProgress === 0
+        && this._transient.phaseDelay === 0
+        && delay === 0) {
       return;  // 已在目标态
     }
     this._transient.targetPhase = targetPhase;
     this._transient.phaseTransitionProgress = 0;
+    this._transient.phaseEasing = easing;
+    this._transient.phaseDuration = Math.max(0.001, duration);  // 防 0 除
+    this._transient.phaseDelay = Math.max(0, delay);
+    // S2.19: phaseStartTime 是 "ready 开始" 时间戳, delay 期间 progress 一直 0
+    this._transient.phaseStartTime = Date.now() + delay * 1000;
   }
 
   /**
    * 推进相变动画（每帧调用，由 render-pipeline 调用）。
+   * S2.19: 支持 delay / duration / easing 独立配置, 多 thought 并发互不干扰.
+   * 注意: phaseTransitionProgress 始终是 linear 0~1, easing 重映射在 render 那边做
+   *   (thought-mesh._applyPhaseEasing 会读 _transient.phaseEasing 选曲线).
    * @param {number} deltaTime - 距离上一帧的秒数
    */
   tickPhaseTransition(deltaTime) {
     const tt = this._transient;
     if (tt.phaseTransitionProgress >= 1) return;
-    // 默认 800ms 完成相变
-    tt.phaseTransitionProgress = Math.min(1, tt.phaseTransitionProgress + deltaTime / 0.8);
+    // S2.19: delay 期间不推进 (等 phaseStartTime)
+    if (tt.phaseStartTime > 0 && Date.now() < tt.phaseStartTime) {
+      return;
+    }
+    // S2.19: linear 进度 0~1, 由 phaseDuration 决定 (默认 0.8s)
+    tt.phaseTransitionProgress = Math.min(1, tt.phaseTransitionProgress + deltaTime / tt.phaseDuration);
     if (tt.phaseTransitionProgress >= 1) {
       tt.currentPhase = tt.targetPhase;
     }
+  }
+
+  /**
+   * S2.19: 获取经过 easing 后的 phase progress (供 render-pipeline / debug 用).
+   *   linear progress 0~1 × _transient.phaseEasing = eased 0~1.
+   *   thought-mesh._applyPhaseEasing 内部会调这个, 保证 SOTA 跟 _transient.phaseEasing 同步.
+   * @returns {number} 0~1
+   */
+  getEasedPhaseProgress() {
+    const tt = this._transient;
+    return applyEasing(tt.phaseTransitionProgress, tt.phaseEasing);
   }
 
   /**

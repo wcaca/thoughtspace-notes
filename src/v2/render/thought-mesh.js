@@ -357,7 +357,10 @@ gl_FragColor.a *= vAlphaMod;`
    * @returns {number} 0~1 eased
    */
   _applyPhaseEasing(linearProg) {
-    return easeOutCubic(linearProg);
+    // S2.19: 读 _transient.phaseEasing (S2.16 写死 ease-out, 改用配置的)
+    // 兼容: 如果 _transient.phaseEasing 不存在 (老 Thought), 走 ease-out
+    // 但 S2.19 之后 startPhaseTransition 必设 phaseEasing, 不会出现未设
+    return easeOutCubic(linearProg);  // 保留 S2.16 fallback; S2.19 caller 可在 _computePhaseScaleMod 里改用 thought.getEasedPhaseProgress()
   }
 
   /**
@@ -371,7 +374,11 @@ gl_FragColor.a *= vAlphaMod;`
   _computePhaseScaleMod(thought) {
     const currentPhase = thought._transient?.currentPhase ?? ThoughtPhase.SEED;
     const linearProg = thought._transient?.phaseTransitionProgress ?? 0;
-    const phaseProg = this._applyPhaseEasing(linearProg);  // S2.16
+    // S2.19: 用 thought.getEasedPhaseProgress() 读 _transient.phaseEasing 配置的缓动
+    //   兼容: 老 Thought 没 phaseEasing 字段 (ease-out fallback)
+    const phaseProg = thought.getEasedPhaseProgress
+      ? thought.getEasedPhaseProgress()
+      : this._applyPhaseEasing(linearProg);
     if (currentPhase === ThoughtPhase.SEED) {
       // SEED 起步: scale=0, 进度→1 时 scale→1.0 (爆裂)
       return phaseProg;
