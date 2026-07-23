@@ -31,6 +31,7 @@
 import * as THREE from 'three';
 import { ThoughtPhase, ThoughtShape, ThoughtMaterial } from '../core/thought.js';
 import { easeOutCubic } from '../animation/ease.js';
+import { phaseFlashAmount, shouldApplyPhaseFlash } from './phase-flash.js';
 
 // ===== 视觉参数默认值 =====
 
@@ -40,6 +41,7 @@ const TEMP_COLD_COLOR = new THREE.Color(0x4a90e2);   // 冷蓝
 const TEMP_WARM_COLOR = new THREE.Color(0xe94560);   // 热红
 const TEMP_NEUTRAL_COLOR = new THREE.Color(0xc9d6ea); // 中性
 const PHASE_GRAY_COLOR = new THREE.Color(0x808080);  // S2.17 相变起点 (中灰)
+const WHITE_FLASH_COLOR = new THREE.Color(0xffffff); // S2.20 相变闪烁高亮 (纯白)
 const DEFAULT_OPACITY = 0.92;
 
 // ===== 形状 -> 几何工厂 =====
@@ -431,13 +433,35 @@ gl_FragColor.a *= vAlphaMod;`
     const currentPhase = thought._transient?.currentPhase ?? ThoughtPhase.SEED;
     const linearProg = thought._transient?.phaseTransitionProgress ?? 0;
     const phaseProg = this._applyPhaseEasing(linearProg);  // S2.16 缓动共享
+    let resultColor;
     if (currentPhase === ThoughtPhase.SEED && linearProg < 1) {
       // phaseProg=0 → gray, phaseProg=1 → trueColor
       // Color.lerp(other, alpha) = this * (1-alpha) + other * alpha
       // 所以 lerp(trueColor, gray, 1-phaseProg) = trueColor*phaseProg + gray*(1-phaseProg) ✓
-      return trueColor.clone().lerp(PHASE_GRAY_COLOR, 1 - phaseProg);
+      resultColor = trueColor.clone().lerp(PHASE_GRAY_COLOR, 1 - phaseProg);
+    } else {
+      resultColor = trueColor.clone();
     }
-    return trueColor.clone();
+    // S2.20: 相变中途温度色短暂闪烁 (flash 峰值 0.3 在 prog=0.5, 边界 0)
+    // sin(π*prog) 曲线: 0→1→0, 叠加 0.3 白光 lerp
+    return this._applyPhaseFlashMod(resultColor, linearProg);
+  }
+
+  /**
+   * S2.20: 相变中途温度色短暂闪烁
+   * 逻辑: phase 0~1 期间, 温度色叠加 0~0.3~0 的白光 (sin 曲线)
+   * 目的: 让 phase 变化视觉更明显, 用户感知到状态切换
+   * @param {THREE.Color} baseColor - 基础颜色 (已含 phase 调制)
+   * @param {number} linearProg - 0~1 phase transition 进度
+   * @returns {THREE.Color} 调制后颜色
+   */
+  _applyPhaseFlashMod(baseColor, linearProg) {
+    const flashAmount = phaseFlashAmount(linearProg);
+    if (!shouldApplyPhaseFlash(flashAmount)) {
+      return baseColor;  // phase 边界或阈值以下, 无闪烁
+    }
+    // 白色 (1,1,1) lerp 进去, flashAmount=0.3 → 颜色 30% 偏白
+    return baseColor.clone().lerp(WHITE_FLASH_COLOR, flashAmount);
   }
 
   /**
