@@ -75,31 +75,31 @@ describe('S2.21 端到端: SEED 中段 (gray→trueColor lerp + flash 双调制)
     const trueColor = temperatureToColor(0.5);
     const result = renderer._computePhaseColorMod(thought, trueColor);
 
-    // 计算预期:
-    //   step1: gray lerp (S2.17, easeOutCubic(0.5)=0.8232) → result1 = lerp(trueColor, gray, 1 - 0.8232) = lerp(trueColor, gray, 0.1768)
-    //   step2: flash (S2.20, linearProg=0.5, 0.3) → result2 = lerp(result1, white, 0.3)
+    // 计算预期 (S2.22: flash 也用 eased, 跟 color lerp 同步):
+    //   step1: gray lerp (easeOutCubic(0.5)=0.8232) → result1 = lerp(trueColor, gray, 1 - 0.8232)
+    //   step2: flash (S2.22, eased=0.8232, sin(π*0.823)≈0.756) → flash = 0.3 * 0.756 = 0.227
     // 关键: flash 后的颜色 r/g/b 都比 result1 大 (因为白光叠加)
-    const eased = 1 - Math.pow(1 - 0.5, 2.5); // easeOutCubic(0.5) = 0.875
+    const eased = 1 - Math.pow(1 - 0.5, 2.5); // easeOutCubic(0.5) = 0.8232
+    const flashAmount = 0.3 * Math.sin(Math.PI * eased);
     const grayLerped = trueColor.clone().lerp(PHASE_GRAY, 1 - eased);
-    const expected = grayLerped.clone().lerp(WHITE, 0.3);
+    const expected = grayLerped.clone().lerp(WHITE, flashAmount);
 
     expect(result.r).toBeCloseTo(expected.r, 3);
     expect(result.g).toBeCloseTo(expected.g, 3);
     expect(result.b).toBeCloseTo(expected.b, 3);
   });
 
-  it('6. SEED+prog=0.05 (gray 主导) → flash 早段 0.046 (sin 0.05π=0.156, 0.3*0.156=0.047)', () => {
+  it('6. SEED+prog=0.05 (gray 主导) → flash 用 eased, 0.05 时 eased=0.121 flash≈0.111', () => {
     const thought = makeThought({ phase: ThoughtPhase.SEED, progress: 0.05 });
     const trueColor = temperatureToColor(0.5);
     const result = renderer._computePhaseColorMod(thought, trueColor);
 
-    // S2.20: flashAmount(0.05) = 0.3 * sin(π * 0.05) ≈ 0.0468
-    // S2.17: eased = _applyPhaseEasing(0.05) = easeOutCubic(0.05) = 1 - 0.95^2.5 = 0.1204
-    // step1: gray lerp (1 - 0.1204 = 0.8796) → gray 主导
-    // step2: flash 0.047 → 颜色轻微偏白
-    const eased = 1 - Math.pow(1 - 0.05, 2.5);  // easeOutCubic
+    // S2.22: flash 用 eased, 跟 color lerp 同步 (都走 easeOutCubic(0.05) = 0.121)
+    //   flash = 0.3 * sin(π*0.121) ≈ 0.3 * 0.371 = 0.111 (跟 S2.20 旧 0.047 不同, 反而更亮)
+    //   这正是 S2.22 期望: flash 在 ease-out 下提前亮 (跟 gray lerp 同步)
+    const eased = 1 - Math.pow(1 - 0.05, 2.5);  // easeOutCubic(0.05) = 0.1204
     const grayLerped = trueColor.clone().lerp(PHASE_GRAY, 1 - eased);
-    const flashAmount = 0.3 * Math.sin(Math.PI * 0.05);
+    const flashAmount = 0.3 * Math.sin(Math.PI * eased);
     const expected = grayLerped.clone().lerp(WHITE, flashAmount);
 
     expect(result.r).toBeCloseTo(expected.r, 3);
@@ -123,26 +123,31 @@ describe('S2.21 端到端: SEED 完成 (trueColor + flash=0)', () => {
 });
 
 describe('S2.21 端到端: 非 SEED phase (trueColor 短路 gray lerp + flash)', () => {
-  it('4. CRYSTAL+prog=0.5 → trueColor + 30% flash 偏白 (gray lerp 短路)', () => {
+  it('4. CRYSTAL+prog=0.5 → trueColor + flash 偏白 (gray lerp 短路, flash 用 eased)', () => {
     const thought = makeThought({ phase: ThoughtPhase.CRYSTAL, progress: 0.5 });
     const trueColor = temperatureToColor(0.5);
     const result = renderer._computePhaseColorMod(thought, trueColor);
 
     // S2.17: currentPhase !== SEED → trueColor (不 gray lerp)
-    // S2.20: flashAmount(0.5) = 0.3, lerp(trueColor, white, 0.3)
-    const expected = trueColor.clone().lerp(WHITE, 0.3);
+    // S2.22: flash 用 eased, easeOutCubic(0.5)=0.823, flash=0.3*sin(π*0.823)=0.227
+    const eased = 1 - Math.pow(0.5, 2.5);  // 0.8232
+    const flashAmount = 0.3 * Math.sin(Math.PI * eased);
+    const expected = trueColor.clone().lerp(WHITE, flashAmount);
 
     expect(result.r).toBeCloseTo(expected.r, 3);
     expect(result.g).toBeCloseTo(expected.g, 3);
     expect(result.b).toBeCloseTo(expected.b, 3);
   });
 
-  it('5. MEMORY+prog=0.5 → trueColor + 30% flash 偏白 (gray lerp 短路)', () => {
+  it('5. MEMORY+prog=0.5 → trueColor + flash 偏白 (gray lerp 短路, flash 用 eased)', () => {
     const thought = makeThought({ phase: ThoughtPhase.MEMORY, progress: 0.5 });
     const trueColor = temperatureToColor(0.5);
     const result = renderer._computePhaseColorMod(thought, trueColor);
 
-    const expected = trueColor.clone().lerp(WHITE, 0.3);
+    // S2.22: flash 用 eased
+    const eased = 1 - Math.pow(0.5, 2.5);
+    const flashAmount = 0.3 * Math.sin(Math.PI * eased);
+    const expected = trueColor.clone().lerp(WHITE, flashAmount);
 
     expect(result.r).toBeCloseTo(expected.r, 3);
     expect(result.g).toBeCloseTo(expected.g, 3);
@@ -215,16 +220,17 @@ describe('S2.21 端到端: flash 不会"覆盖"gray lerp (叠加而非替代)', 
 });
 
 describe('S2.21 端到端: flash 跟 S2.16 ease-out 关系 (linear vs eased)', () => {
-  it('10. flash 用 linearProg, S2.17 用 eased, 两者独立不冲突', () => {
-    // SEED+prog=0.1: flash=0.094 (0.3*sin(0.1π)), eased=easeOutCubic(0.1)=0.2316
-    // 验证 flash 不会因为 eased 而改变 (linear vs eased 独立)
+  it('10. flash 跟 color lerp 都用 eased (S2.22 同步, 峰位在 ease-out 后段)', () => {
+    // SEED+prog=0.1: eased=easeOutCubic(0.1)=0.232
+    //   flash = 0.3 * sin(π*0.232) ≈ 0.211 (S2.22 跟 color lerp 同步)
+    //   跟 S2.21 旧 0.094 不同, 反而更亮 (因为 eased 偏后)
     const thought = makeThought({ phase: ThoughtPhase.SEED, progress: 0.1 });
     const trueColor = temperatureToColor(0.5);
     const result = renderer._computePhaseColorMod(thought, trueColor);
 
-    const eased = 1 - Math.pow(1 - 0.1, 2.5); // easeOutCubic(0.1) = 0.271
+    const eased = 1 - Math.pow(1 - 0.1, 2.5); // easeOutCubic(0.1) = 0.2316
     const grayLerped = trueColor.clone().lerp(PHASE_GRAY, 1 - eased);
-    const flashAmount = 0.3 * Math.sin(Math.PI * 0.1); // ≈ 0.094
+    const flashAmount = 0.3 * Math.sin(Math.PI * eased); // ≈ 0.211
     const expected = grayLerped.clone().lerp(WHITE, flashAmount);
 
     expect(result.r).toBeCloseTo(expected.r, 3);

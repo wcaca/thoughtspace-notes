@@ -424,6 +424,9 @@ gl_FragColor.a *= vAlphaMod;`
    *   - 其他相变中 (其他 phase, 0<progress<1): color = trueColor (不 lerp, 已经是真色)
    *   - 已完成 (progress=1): color = trueColor
    * S2.16: lerp 系数走 ease-out 缓动, 跟 scale/alpha 同步.
+   * S2.22: lerp 系数 + flash 都改用 per-thought getEasedPhaseProgress (eased)
+   *   跟 v_scale 对齐, 避免 EASE_IN 下 color lerp 慢起 + scale 慢起 失步
+   *   flash 用 sin(π*progress) 边界归零, 0/1 时 0, 接受 eased 输入仍准
    * @private
    * @param {Thought} thought
    * @param {THREE.Color} trueColor - 真温度色
@@ -432,7 +435,11 @@ gl_FragColor.a *= vAlphaMod;`
   _computePhaseColorMod(thought, trueColor) {
     const currentPhase = thought._transient?.currentPhase ?? ThoughtPhase.SEED;
     const linearProg = thought._transient?.phaseTransitionProgress ?? 0;
-    const phaseProg = this._applyPhaseEasing(linearProg);  // S2.16 缓动共享
+    // S2.22: color lerp 系数走 per-thought eased progress (跟 scale 同步)
+    //   跟 v_scale 用 getEasedPhaseProgress 一致, 避免 EASE_IN 时 scale 慢起 + color 快起 失步
+    const phaseProg = thought.getEasedPhaseProgress
+      ? thought.getEasedPhaseProgress()
+      : this._applyPhaseEasing(linearProg);
     let resultColor;
     if (currentPhase === ThoughtPhase.SEED && linearProg < 1) {
       // phaseProg=0 → gray, phaseProg=1 → trueColor
@@ -442,9 +449,9 @@ gl_FragColor.a *= vAlphaMod;`
     } else {
       resultColor = trueColor.clone();
     }
-    // S2.20: 相变中途温度色短暂闪烁 (flash 峰值 0.3 在 prog=0.5, 边界 0)
-    // sin(π*prog) 曲线: 0→1→0, 叠加 0.3 白光 lerp
-    return this._applyPhaseFlashMod(resultColor, linearProg);
+    // S2.22: flash 也用 eased progress (0/1 边界 sin 仍为 0, 峰位跟 color lerp 同步)
+    //   解决 EASE_IN 下 flash 闪位与 color 渐变不匹配问题
+    return this._applyPhaseFlashMod(resultColor, phaseProg);
   }
 
   /**
@@ -455,8 +462,9 @@ gl_FragColor.a *= vAlphaMod;`
    * @param {number} linearProg - 0~1 phase transition 进度
    * @returns {THREE.Color} 调制后颜色
    */
-  _applyPhaseFlashMod(baseColor, linearProg) {
-    const flashAmount = phaseFlashAmount(linearProg);
+  _applyPhaseFlashMod(baseColor, progress) {
+    // S2.22: 参数名从 linearProg 改 progress, 表示接受 linear OR eased (phaseFlashAmount 0/1 边界都归零)
+    const flashAmount = phaseFlashAmount(progress);
     if (!shouldApplyPhaseFlash(flashAmount)) {
       return baseColor;  // phase 边界或阈值以下, 无闪烁
     }
