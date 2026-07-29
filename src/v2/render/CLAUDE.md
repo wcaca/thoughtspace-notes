@@ -13,6 +13,7 @@ L2渲染层（Three.js），晶体空间、层、念头体、相变动画、视�
 - `thought-mesh.js` — 念头实体渲染（锐利低面数多面体 + 温度色 + displayScale, S2.6）
 - `memory-mesh.js` — 记忆实体渲染（圆润高面数体 + 材质映射, S2.7）
 - `render-pipeline.js` — 帧调度管线（5阶段+16ms预算+每阶段计时,S2.10 排查基础）
+- `phase-flash.js` — phase 闪烁计算（纯函数, sin 曲线 + 阈值, S2.20 + S2.22 接受 eased）
 
 ## 待创建（后续阶段）
 phase-transition.js / space-reorganizer.js / damper-mesh.js / mark-renderer.js / unknown-mark-mesh.js / relation-line.js / tag-attraction.js / reference-link.js / content-editor.js / search-highlight.js / subspace-transition.js / todo-mesh.js / shader/* / debug-overlay.js / expected-calculator.js / state-visualizer.js / endoscope-shader.js / projection-anchor.js / orbit-renderer.js

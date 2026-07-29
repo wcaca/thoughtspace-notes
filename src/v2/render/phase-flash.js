@@ -1,3 +1,12 @@
+/**
+ * [INPUT]: 无外部依赖（纯函数, 不引入 THREE, 便于单测）
+ * [OUTPUT]: phaseFlashAmount(progress) — 闪烁强度 0~0.3 (sin 曲线)
+ *   + shouldApplyPhaseFlash(progress) — 阈值判断 (避免无意义 lerp)
+ *   + PHASE_FLASH_AMPLITUDE=0.3 常量
+ *   + PHASE_FLASH_THRESHOLD=0.001 常量
+ * [POS]: src/v2/render/phase-flash.js,L2 渲染层,phase 闪烁计算 (纯函数)
+ * [PROTOCOL]: 变更时更新此头部,然后检查 ../CLAUDE.md
+ *
 // S2.20: phase 变化时温度色短暂闪烁
 // S2.22: 接收 linear OR eased progress (0~1 边界归零是 不变量, sin 峰值对 eased 也准)
 // 纯函数模块, 不依赖 THREE, 便于测试

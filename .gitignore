@@ -17,3 +17,4 @@ flag-result.json
 zone-result.json
 .notes-link-graph.json.bak
 DEBUG_NOTES.md
+_dbg*.mjs

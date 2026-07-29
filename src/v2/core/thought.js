@@ -1,6 +1,6 @@
 /**
  * [INPUT]: space.js 坐标系 + layer.js 层归属 (getLayer) + scene-state-store.js 状态中枢
- * [OUTPUT]: Thought类 — 念头/记忆实体（相变、内外结构、占据空间比例、displayScale）
+ * [OUTPUT]: Thought类 — 念头/记忆实体（相变、内外结构、占据空间比例、displayScale）[S2.19 getEasedPhaseProgress API]
  *   + EntityStateAttachment 契约 — 实体自动携带状态附件
  *   + ThoughtPhase 枚举 — 念头相态（点/晶/相变中/已相变）
  *   + ThoughtMaterial 枚举 — 念头材质（金属/玻璃/木质/液态/晶体）

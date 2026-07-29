@@ -1,6 +1,6 @@
 /**
  * [INPUT]: three.js, core/thought.js (Thought 类) + core/space.js (空间坐标系)
- * [OUTPUT]: ThoughtMeshRenderer 类 — 念头渲染器（锐利低面数体：四面体/立方体/八面体）
+ * [OUTPUT]: ThoughtMeshRenderer 类 — 念头渲染器（锐利低面数体：四面体/立方体/八面体）[S2.20 phase flash + S2.22 per-thought eased]
  *   + 内置温度色映射（蓝=冷/红=热）
  *   + displayScale 应用（基于 position.vertical）
  *   + 瞬态层接入（phaseTransitionProgress 影响形变）
