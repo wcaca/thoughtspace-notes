@@ -31,7 +31,7 @@
 import * as THREE from 'three';
 import { ThoughtPhase, ThoughtShape, ThoughtMaterial } from '../core/thought.js';
 import { easeOutCubic } from '../animation/ease.js';
-import { phaseFlashAmount, shouldApplyPhaseFlash } from './phase-flash.js';
+import { phaseFlashAmount, shouldApplyPhaseFlash, getPhaseFlashAmplitude } from './phase-flash.js';
 
 // ===== 视觉参数默认值 =====
 
@@ -435,6 +435,7 @@ gl_FragColor.a *= vAlphaMod;`
   _computePhaseColorMod(thought, trueColor) {
     const currentPhase = thought._transient?.currentPhase ?? ThoughtPhase.SEED;
     const linearProg = thought._transient?.phaseTransitionProgress ?? 0;
+    const targetPhase = thought._transient?.targetPhase ?? currentPhase;
     // S2.22: color lerp 系数走 per-thought eased progress (跟 scale 同步)
     //   跟 v_scale 用 getEasedPhaseProgress 一致, 避免 EASE_IN 时 scale 慢起 + color 快起 失步
     const phaseProg = thought.getEasedPhaseProgress
@@ -451,24 +452,29 @@ gl_FragColor.a *= vAlphaMod;`
     }
     // S2.22: flash 也用 eased progress (0/1 边界 sin 仍为 0, 峰位跟 color lerp 同步)
     //   解决 EASE_IN 下 flash 闪位与 color 渐变不匹配问题
-    return this._applyPhaseFlashMod(resultColor, phaseProg);
+    // S2.23: flash 振幅走 per-transition 查表 (fromPhase=currentPhase, toPhase=targetPhase)
+    return this._applyPhaseFlashMod(resultColor, phaseProg, currentPhase, targetPhase);
   }
 
   /**
    * S2.20: 相变中途温度色短暂闪烁
-   * 逻辑: phase 0~1 期间, 温度色叠加 0~0.3~0 的白光 (sin 曲线)
+   * 逻辑: phase 0~1 期间, 温度色叠加 0~amplitude~0 的白光 (sin 曲线)
    * 目的: 让 phase 变化视觉更明显, 用户感知到状态切换
+   * S2.23: per-transition 振幅 (从 fromPhase → toPhase 查表)
    * @param {THREE.Color} baseColor - 基础颜色 (已含 phase 调制)
-   * @param {number} linearProg - 0~1 phase transition 进度
+   * @param {number} progress - 0~1 phase transition 进度 (linear OR eased)
+   * @param {string} [fromPhase] - S2.23: 起始 phase, 不传则用默认振幅
+   * @param {string} [toPhase] - S2.23: 目标 phase
    * @returns {THREE.Color} 调制后颜色
    */
-  _applyPhaseFlashMod(baseColor, progress) {
-    // S2.22: 参数名从 linearProg 改 progress, 表示接受 linear OR eased (phaseFlashAmount 0/1 边界都归零)
-    const flashAmount = phaseFlashAmount(progress);
+  _applyPhaseFlashMod(baseColor, progress, fromPhase, toPhase) {
+    // S2.23: per-transition 振幅查表
+    const amplitude = getPhaseFlashAmplitude(fromPhase, toPhase);
+    const flashAmount = phaseFlashAmount(progress, amplitude);
     if (!shouldApplyPhaseFlash(flashAmount)) {
       return baseColor;  // phase 边界或阈值以下, 无闪烁
     }
-    // 白色 (1,1,1) lerp 进去, flashAmount=0.3 → 颜色 30% 偏白
+    // 白色 (1,1,1) lerp 进去, flashAmount=amplitude → 颜色 amplitude 比例偏白
     return baseColor.clone().lerp(WHITE_FLASH_COLOR, flashAmount);
   }
 
