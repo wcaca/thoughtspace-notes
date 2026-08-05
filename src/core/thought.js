@@ -48,6 +48,15 @@ export function normalizeSource(source) {
 export function createThought(id, text, x, y, z, opts = {}) {
   const now = Date.now();
   const source = normalizeSource(opts && opts.source);
+  // S2.25: per-thought 振幅覆盖 — 0~1 范围 number 或 null (默认 = 走查表)
+  //   防御性: 非法值 (string/NaN/负数/>1) 视为 null, 走查表
+  let flashAmplitudeOverride = null;
+  if (opts && typeof opts.flashAmplitudeOverride === 'number' && !isNaN(opts.flashAmplitudeOverride)) {
+    const v = opts.flashAmplitudeOverride;
+    if (v >= 0 && v <= 1) {
+      flashAmplitudeOverride = v;
+    }
+  }
   return {
     id,
     text: text || '',
@@ -58,7 +67,8 @@ export function createThought(id, text, x, y, z, opts = {}) {
     colorTag: null,
     lastInteractionAt: now,
     createdAt: now,
-    source
+    source,
+    flashAmplitudeOverride  // S2.25: per-thought phase flash 振幅覆盖
   };
 }
 

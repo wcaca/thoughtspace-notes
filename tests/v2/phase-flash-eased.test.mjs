@@ -148,10 +148,12 @@ test('S2.22: thought-mesh.js _computePhaseColorMod 改用 getEasedPhaseProgress'
 test('S2.22: thought-mesh.js _applyPhaseFlashMod 接 phaseProg (eased)', () => {
   const src = readFileSync(join(REPO, 'src/v2/render/thought-mesh.js'), 'utf-8');
   // 调用处应传 phaseProg (eased), 而非 linearProg
-  assert.ok(src.includes('_applyPhaseFlashMod(resultColor, phaseProg)'),
+  // S2.25 扩展: 后面多 2 个参数 (targetPhase, thought), 用 regex 匹配前 3 个
+  assert.ok(/_applyPhaseFlashMod\(\s*resultColor\s*,\s*phaseProg/.test(src),
     '_applyPhaseFlashMod 应接 phaseProg (eased) 而非 linearProg');
   // _applyPhaseFlashMod 函数定义应改名为 progress
-  assert.ok(src.includes('_applyPhaseFlashMod(baseColor, progress)'),
+  // S2.25 扩展: 后面多 thought 参数, 用 regex 匹配前 3 个
+  assert.ok(/_applyPhaseFlashMod\(\s*baseColor\s*,\s*progress/.test(src),
     '_applyPhaseFlashMod 函数定义应改 progress');
 });
 

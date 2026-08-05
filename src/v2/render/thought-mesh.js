@@ -453,7 +453,8 @@ gl_FragColor.a *= vAlphaMod;`
     // S2.22: flash 也用 eased progress (0/1 边界 sin 仍为 0, 峰位跟 color lerp 同步)
     //   解决 EASE_IN 下 flash 闪位与 color 渐变不匹配问题
     // S2.23: flash 振幅走 per-transition 查表 (fromPhase=currentPhase, toPhase=targetPhase)
-    return this._applyPhaseFlashMod(resultColor, phaseProg, currentPhase, targetPhase);
+    // S2.25: per-thought 振幅覆盖 — thought.flashAmplitudeOverride 优先于查表
+    return this._applyPhaseFlashMod(resultColor, phaseProg, currentPhase, targetPhase, thought);
   }
 
   /**
@@ -461,15 +462,18 @@ gl_FragColor.a *= vAlphaMod;`
    * 逻辑: phase 0~1 期间, 温度色叠加 0~amplitude~0 的白光 (sin 曲线)
    * 目的: 让 phase 变化视觉更明显, 用户感知到状态切换
    * S2.23: per-transition 振幅 (从 fromPhase → toPhase 查表)
+   * S2.25: per-thought 振幅覆盖 — thought.flashAmplitudeOverride 优先于查表
    * @param {THREE.Color} baseColor - 基础颜色 (已含 phase 调制)
    * @param {number} progress - 0~1 phase transition 进度 (linear OR eased)
    * @param {string} [fromPhase] - S2.23: 起始 phase, 不传则用默认振幅
    * @param {string} [toPhase] - S2.23: 目标 phase
+   * @param {object} [thought] - S2.25: 可选 thought, 含 flashAmplitudeOverride 覆盖
    * @returns {THREE.Color} 调制后颜色
    */
-  _applyPhaseFlashMod(baseColor, progress, fromPhase, toPhase) {
-    // S2.23: per-transition 振幅查表
-    const amplitude = getPhaseFlashAmplitude(fromPhase, toPhase);
+  _applyPhaseFlashMod(baseColor, progress, fromPhase, toPhase, thought) {
+    // S2.25: per-thought 振幅覆盖优先 (getPhaseFlashAmplitude 内部处理)
+    //   顺序: thought.flashAmplitudeOverride > per-transition 查表 > 默认 0.3
+    const amplitude = getPhaseFlashAmplitude(fromPhase, toPhase, thought);
     const flashAmount = phaseFlashAmount(progress, amplitude);
     if (!shouldApplyPhaseFlash(flashAmount)) {
       return baseColor;  // phase 边界或阈值以下, 无闪烁
