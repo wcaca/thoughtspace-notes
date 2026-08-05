@@ -50,6 +50,9 @@ function makeThought({ phase = ThoughtPhase.SEED, progress = 0, content = 'test'
   t._transient = t._transient || {};
   t._transient.currentPhase = phase;
   t._transient.phaseTransitionProgress = progress;
+  // S2.25: 锁定振幅 0.3 (跟 phase-flash-color-lerp-integration.test.js 同步修)
+  //   避免 S2.23 查表变更 (SEED→CRYSTAL=0.4) 导致测试期望硬编码 0.3 错位
+  t.config = { ...t.config, flashAmplitudeOverride: 0.3 };
   return t;
 }
 
