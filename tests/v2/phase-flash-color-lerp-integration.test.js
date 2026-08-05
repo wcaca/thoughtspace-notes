@@ -47,6 +47,10 @@ function makeThought({ phase = ThoughtPhase.SEED, progress = 0, content = 'integ
   t._transient = t._transient || {};
   t._transient.currentPhase = phase;
   t._transient.phaseTransitionProgress = progress;
+  // S2.25: 测试期望硬编码 amplitude 0.3, 但 S2.23 查表可能给 0.4 (SEED→CRYSTAL)
+  //   makeThought targetPhase 隐式 = CRYSTAL (config 默认) → 查表振幅 0.4 → 测的 0.3 期望挂
+  //   修法: 强制 flashAmplitudeOverride = 0.3, 锁定振幅做精确测 (测试意图是测 color lerp + flash 调制, 不是测查表)
+  t.config = { ...t.config, flashAmplitudeOverride: 0.3 };
   return t;
 }
 
