@@ -118,6 +118,10 @@ const DEFAULT_THOUGHT_CONFIG = Object.freeze({
   occupancy: 1.0,             // 占据空间比例 0.1~1.0（念头互不重叠）
   innerRadius: 0.4,           // 内芯半径比例（外壳 = 1.0 - innerRadius）
   opacity: 1.0,
+  // S2.25: per-thought phase flash 振幅覆盖 (0~1 范围, null = 走查表 / 默认)
+  //   用途: UI 单独调某个 thought 的闪烁强度, 不影响其他 thought
+  //   走 thought-mesh.js _applyPhaseFlashMod 透传给 phase-flash.getPhaseFlashAmplitude
+  flashAmplitudeOverride: null,
   metadata: {},               // 自定义元数据
 });
 

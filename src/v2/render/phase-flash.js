@@ -61,6 +61,7 @@ export const PHASE_FLASH_AMPLITUDE_BY_TRANSITION = Object.freeze({
  *   优先级: thought.flashAmplitudeOverride > per-transition 查表 > PHASE_FLASH_AMPLITUDE 默认
  *   override 防御性: 必须是 0~1 范围 number, 否则忽略 (视为 null, 走查表)
  *   用途: per-thought 个性化 (UI 调强度), 不影响其他 thought
+ *   双兼容: 顶层字段 (v1 createThought) + thought.config.flashAmplitudeOverride (v2 Thought class)
  * @param {string} fromPhase - 起始 phase (ThoughtPhase 枚举值, 小写)
  * @param {string} toPhase - 目标 phase
  * @param {object} [thought] - S2.25: 可选 thought 对象, 含 flashAmplitudeOverride 字段
@@ -69,7 +70,10 @@ export const PHASE_FLASH_AMPLITUDE_BY_TRANSITION = Object.freeze({
 export function getPhaseFlashAmplitude(fromPhase, toPhase, thought) {
   // S2.25: thought 级覆盖优先 (per-thought 个性化, UI 调强度)
   if (thought && typeof thought === 'object') {
-    const override = thought.flashAmplitudeOverride;
+    // 双源: 顶层字段 (v1) + config 字段 (v2 Thought class)
+    const v1Override = thought.flashAmplitudeOverride;
+    const v2Override = thought.config && thought.config.flashAmplitudeOverride;
+    const override = v1Override !== undefined && v1Override !== null ? v1Override : v2Override;
     if (typeof override === 'number' && !isNaN(override) && override >= 0 && override <= 1) {
       return override;
     }

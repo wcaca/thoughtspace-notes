@@ -85,6 +85,27 @@ describe('S2.25 per-thought 振幅覆盖 getPhaseFlashAmplitude(from, to, though
       PHASE_FLASH_AMPLITUDE_BY_TRANSITION['seed→crystal']
     );
   });
+
+  it('v2 Thought class 字段: thought.config.flashAmplitudeOverride (双兼容)', () => {
+    // v2 Thought class 把 config 放 this.config, v1 createThought 放顶层
+    // getPhaseFlashAmplitude 应同时支持 2 种来源
+    const v2Thought = { config: { flashAmplitudeOverride: 0.7 } };
+    assert.equal(getPhaseFlashAmplitude('seed', 'crystal', v2Thought), 0.7);
+
+    const v1Thought = { flashAmplitudeOverride: 0.7 };
+    assert.equal(getPhaseFlashAmplitude('seed', 'crystal', v1Thought), 0.7);
+
+    // v1 优先于 v2 (显式 v1 覆盖 v2 默认)
+    const mixed = { flashAmplitudeOverride: 0.3, config: { flashAmplitudeOverride: 0.8 } };
+    assert.equal(getPhaseFlashAmplitude('seed', 'crystal', mixed), 0.3);
+
+    // config 字段非法值 → 走查表
+    const badConfig = { config: { flashAmplitudeOverride: 1.5 } };
+    assert.equal(
+      getPhaseFlashAmplitude('seed', 'crystal', badConfig),
+      PHASE_FLASH_AMPLITUDE_BY_TRANSITION['seed→crystal']
+    );
+  });
 });
 
 describe('S2.25 phaseFlashAmount(progress, amplitude) + override 集成', () => {
