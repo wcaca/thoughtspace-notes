@@ -1,14 +1,14 @@
 {
-  "generatedAt": "2026-07-07T12:41:08.096Z",
+  "generatedAt": "2026-08-06T21:43:57.811Z",
   "stats": {
-    "totalLinks": 21,
-    "uniqueAnchors": 20,
-    "filesWithNotes": 6,
+    "totalLinks": 74,
+    "uniqueAnchors": 70,
+    "filesWithNotes": 38,
     "errors": 0,
     "warnings": 0
   },
   "forward": {
-    "src\\bootstrap.js": [
+    "src/bootstrap.js": [
       {
         "subProject": "sp1",
         "type": "pitfall",
@@ -31,7 +31,7 @@
         "since": "2026-07-07"
       }
     ],
-    "src\\core\\layer-store.js": [
+    "src/core/layer-store.js": [
       {
         "subProject": "sp1",
         "type": "pitfall",
@@ -40,7 +40,7 @@
         "since": "2026-07-07"
       }
     ],
-    "src\\core\\shape-resolver.js": [
+    "src/core/shape-resolver.js": [
       {
         "subProject": "shape",
         "type": "decision",
@@ -91,7 +91,7 @@
         "since": "2026-07-07"
       }
     ],
-    "src\\core\\sort-axis.js": [
+    "src/core/sort-axis.js": [
       {
         "subProject": "sp1",
         "type": "pitfall",
@@ -114,7 +114,16 @@
         "since": "2026-07-07"
       }
     ],
-    "src\\render\\observe-state.js": [
+    "src/render/instanced-thoughts.js": [
+      {
+        "subProject": "s2",
+        "type": "pitfall",
+        "anchor": "v1-stub-revival",
+        "line": 20,
+        "since": "2026-07-08"
+      }
+    ],
+    "src/render/observe-state.js": [
       {
         "subProject": "sp1",
         "type": "decision",
@@ -123,7 +132,7 @@
         "since": "2026-07-07"
       }
     ],
-    "src\\render\\observe-views.js": [
+    "src/render/observe-views.js": [
       {
         "subProject": "sp1",
         "type": "pitfall",
@@ -166,152 +175,943 @@
         "line": 265,
         "since": "2026-07-07"
       }
+    ],
+    "src/runtime/flags/v2-migration.js": [
+      {
+        "subProject": "s0",
+        "type": "decision",
+        "anchor": "entry-switch",
+        "line": 12,
+        "since": "2026-07-08"
+      }
+    ],
+    "src/v2/animation/ease.js": [
+      {
+        "subProject": "s2",
+        "type": "decision",
+        "anchor": "animation",
+        "line": 18,
+        "since": "2026-07-20"
+      }
+    ],
+    "src/v2/core/action-router.js": [
+      {
+        "subProject": "s0",
+        "type": "decision",
+        "anchor": "action-router",
+        "line": 24,
+        "since": "2026-07-08"
+      },
+      {
+        "subProject": "s0",
+        "type": "decision",
+        "anchor": "route",
+        "line": 105,
+        "since": "2026-07-08"
+      },
+      {
+        "subProject": "s0",
+        "type": "decision",
+        "anchor": "ai-history",
+        "line": 125,
+        "since": "2026-07-08"
+      }
+    ],
+    "src/v2/core/cognitive-framework.js": [
+      {
+        "subProject": "s1",
+        "type": "decision",
+        "anchor": "preset-swap",
+        "line": 28,
+        "since": "2026-07-08"
+      }
+    ],
+    "src/v2/core/diagnostic-engine.js": [
+      {
+        "subProject": "s1",
+        "type": "decision",
+        "anchor": "15rules",
+        "line": 17,
+        "since": "2026-07-08"
+      }
+    ],
+    "src/v2/core/layer.js": [
+      {
+        "subProject": "s1",
+        "type": "decision",
+        "anchor": "preset-instance",
+        "line": 29,
+        "since": "2026-07-08"
+      }
+    ],
+    "src/v2/core/mark-system.js": [
+      {
+        "subProject": "s1",
+        "type": "decision",
+        "anchor": "space-organizer",
+        "line": 32,
+        "since": "2026-07-08"
+      }
+    ],
+    "src/v2/core/scene-state-store.js": [
+      {
+        "subProject": "s0",
+        "type": "decision",
+        "anchor": "state-store",
+        "line": 18,
+        "since": "2026-07-08"
+      },
+      {
+        "subProject": "s0",
+        "type": "decision",
+        "anchor": "apply-action",
+        "line": 106,
+        "since": "2026-07-08"
+      },
+      {
+        "subProject": "s0",
+        "type": "decision",
+        "anchor": "ai-serialize",
+        "line": 127,
+        "since": "2026-07-08"
+      },
+      {
+        "subProject": "s0",
+        "type": "decision",
+        "anchor": "ai-change-chain",
+        "line": 139,
+        "since": "2026-07-08"
+      },
+      {
+        "subProject": "s0",
+        "type": "decision",
+        "anchor": "ai-diagnostic",
+        "line": 150,
+        "since": "2026-07-08"
+      },
+      {
+        "subProject": "s0",
+        "type": "decision",
+        "anchor": "ai-snapshot",
+        "line": 162,
+        "since": "2026-07-08"
+      }
+    ],
+    "src/v2/core/space.js": [
+      {
+        "subProject": "s1",
+        "type": "decision",
+        "anchor": "crystal-boundary",
+        "line": 27,
+        "since": "2026-07-08"
+      }
+    ],
+    "src/v2/core/spatial-query.js": [
+      {
+        "subProject": "s1",
+        "type": "decision",
+        "anchor": "unified-iface",
+        "line": 12,
+        "since": "2026-07-08"
+      }
+    ],
+    "src/v2/core/spatial-state-field.js": [
+      {
+        "subProject": "s1",
+        "type": "decision",
+        "anchor": "32grid",
+        "line": 12,
+        "since": "2026-07-08"
+      }
+    ],
+    "src/v2/core/state-change-chain.js": [
+      {
+        "subProject": "s1",
+        "type": "decision",
+        "anchor": "causal-dag",
+        "line": 12,
+        "since": "2026-07-08"
+      }
+    ],
+    "src/v2/core/state-snapshot.js": [
+      {
+        "subProject": "s1",
+        "type": "decision",
+        "anchor": "ring-buffer",
+        "line": 12,
+        "since": "2026-07-08"
+      }
+    ],
+    "src/v2/core/thought.js": [
+      {
+        "subProject": "s2",
+        "type": "decision",
+        "anchor": "thought-as-crystal",
+        "line": 41,
+        "since": "2026-07-08"
+      }
+    ],
+    "src/v2/core/view-orbit.js": [
+      {
+        "subProject": "s1",
+        "type": "decision",
+        "anchor": "orbit-math",
+        "line": 6,
+        "since": "2026-07-08"
+      },
+      {
+        "subProject": "s1",
+        "type": "decision",
+        "anchor": "orbit-math",
+        "line": 27,
+        "since": "2026-07-08"
+      }
+    ],
+    "src/v2/debug/debug-overlay.js": [
+      {
+        "subProject": "s2",
+        "type": "decision",
+        "anchor": "dom-over-canvas",
+        "line": 37,
+        "since": "2026-07-13"
+      },
+      {
+        "subProject": "s2",
+        "type": "decision",
+        "anchor": "console-fallback",
+        "line": 40,
+        "since": "2026-07-13"
+      }
+    ],
+    "src/v2/interaction/framework-switcher.js": [
+      {
+        "subProject": "s1",
+        "type": "decision",
+        "anchor": "framework-switcher",
+        "line": 12,
+        "since": "2026-07-08"
+      }
+    ],
+    "src/v2/interaction/quick-add-panel.js": [
+      {
+        "subProject": "s2",
+        "type": "decision",
+        "anchor": "quick-add-panel",
+        "line": 16,
+        "since": "2026-07-16"
+      },
+      {
+        "subProject": "s2",
+        "type": "decision",
+        "anchor": "dom-over-canvas",
+        "line": 20,
+        "since": "2026-07-16"
+      },
+      {
+        "subProject": "s2",
+        "type": "decision",
+        "anchor": "console-fallback",
+        "line": 23,
+        "since": "2026-07-16"
+      },
+      {
+        "subProject": "s2",
+        "type": "decision",
+        "anchor": "shortkey-n",
+        "line": 26,
+        "since": "2026-07-16"
+      },
+      {
+        "subProject": "s2",
+        "type": "decision",
+        "anchor": "position-topright",
+        "line": 29,
+        "since": "2026-07-16"
+      }
+    ],
+    "src/v2/main.js": [
+      {
+        "subProject": "s1",
+        "type": "decision",
+        "anchor": "v2-main",
+        "line": 34,
+        "since": "2026-07-08"
+      },
+      {
+        "subProject": "s2",
+        "type": "decision",
+        "anchor": "s2-8-entity-integration",
+        "line": 38,
+        "since": "2026-07-10"
+      },
+      {
+        "subProject": "s2",
+        "type": "decision",
+        "anchor": "s2-10-pipeline-integration",
+        "line": 43,
+        "since": "2026-07-11"
+      },
+      {
+        "subProject": "s2",
+        "type": "decision",
+        "anchor": "s2-11-12-debug-integration",
+        "line": 48,
+        "since": "2026-07-14"
+      },
+      {
+        "subProject": "s2",
+        "type": "decision",
+        "anchor": "thought-entity-integration",
+        "line": 195,
+        "since": "2026-07-10"
+      },
+      {
+        "subProject": "s2",
+        "type": "decision",
+        "anchor": "debug-overlay-integration",
+        "line": 312,
+        "since": "2026-07-14"
+      },
+      {
+        "subProject": "s2",
+        "type": "decision",
+        "anchor": "quick-add-integration",
+        "line": 319,
+        "since": "2026-07-16"
+      },
+      {
+        "subProject": "s1",
+        "type": "decision",
+        "anchor": "global-entry",
+        "line": 340,
+        "since": "2026-07-08"
+      }
+    ],
+    "src/v2/persistence/layer-bridge.js": [
+      {
+        "subProject": "s1",
+        "type": "decision",
+        "anchor": "layer-bridge",
+        "line": 12,
+        "since": "2026-07-08"
+      }
+    ],
+    "src/v2/persistence/thought-bridge.js": [
+      {
+        "subProject": "s2",
+        "type": "decision",
+        "anchor": "thought-bridge",
+        "line": 13,
+        "since": "2026-07-08"
+      }
+    ],
+    "src/v2/render/base-plane.js": [
+      {
+        "subProject": "s1",
+        "type": "decision",
+        "anchor": "base-plane",
+        "line": 14,
+        "since": "2026-07-08"
+      }
+    ],
+    "src/v2/render/crystal-space.js": [
+      {
+        "subProject": "s1",
+        "type": "decision",
+        "anchor": "crystal-space",
+        "line": 12,
+        "since": "2026-07-08"
+      }
+    ],
+    "src/v2/render/expected-calculator.js": [
+      {
+        "subProject": "s2",
+        "type": "decision",
+        "anchor": "constants-from-measurement",
+        "line": 33,
+        "since": "2026-07-13"
+      }
+    ],
+    "src/v2/render/layer-renderer.js": [
+      {
+        "subProject": "s1",
+        "type": "decision",
+        "anchor": "layer-renderer",
+        "line": 12,
+        "since": "2026-07-08"
+      }
+    ],
+    "src/v2/render/memory-mesh.js": [
+      {
+        "subProject": "s2",
+        "type": "decision",
+        "anchor": "memory-mesh",
+        "line": 26,
+        "since": "2026-07-09"
+      }
+    ],
+    "src/v2/render/operation-zone.js": [
+      {
+        "subProject": "s1",
+        "type": "decision",
+        "anchor": "operation-zone",
+        "line": 14,
+        "since": "2026-07-08"
+      }
+    ],
+    "src/v2/render/render-pipeline.js": [
+      {
+        "subProject": "s2",
+        "type": "decision",
+        "anchor": "render-pipeline-5-stages",
+        "line": 31,
+        "since": "2026-07-11"
+      },
+      {
+        "subProject": "s2",
+        "type": "pitfall",
+        "anchor": "dont-throw-on-overrun",
+        "line": 36,
+        "since": "2026-07-11"
+      }
+    ],
+    "src/v2/render/space-boundary.js": [
+      {
+        "subProject": "s1",
+        "type": "decision",
+        "anchor": "space-boundary",
+        "line": 12,
+        "since": "2026-07-08"
+      }
+    ],
+    "src/v2/render/thought-mesh.js": [
+      {
+        "subProject": "s2",
+        "type": "decision",
+        "anchor": "thought-mesh",
+        "line": 25,
+        "since": "2026-07-09"
+      }
+    ],
+    "src/v2/render/view-orbit-camera.js": [
+      {
+        "subProject": "s1",
+        "type": "decision",
+        "anchor": "orbit-camera",
+        "line": 12,
+        "since": "2026-07-08"
+      }
     ]
   },
   "reverse": {
     "sp1:pitfall:T1.4-no-bootstrap": [
       {
-        "file": "src\\bootstrap.js",
+        "file": "src/bootstrap.js",
         "line": 29,
         "since": "2026-07-07"
       }
     ],
     "sp1:decision:why-window-globals": [
       {
-        "file": "src\\bootstrap.js",
+        "file": "src/bootstrap.js",
         "line": 32,
         "since": "2026-07-07"
       }
     ],
     "sp1:data-flow:startup-cold-sequence": [
       {
-        "file": "src\\bootstrap.js",
+        "file": "src/bootstrap.js",
         "line": 34,
         "since": "2026-07-07"
       }
     ],
     "sp1:pitfall:T1.5-json-undefined-side-effect": [
       {
-        "file": "src\\core\\layer-store.js",
+        "file": "src/core/layer-store.js",
         "line": 143,
         "since": "2026-07-07"
       }
     ],
     "shape:decision:why-individuality-not-wholesomeness": [
       {
-        "file": "src\\core\\shape-resolver.js",
+        "file": "src/core/shape-resolver.js",
         "line": 19,
         "since": "2026-07-07"
       }
     ],
     "shape:pitfall:T10-bug1-empty-state-misjudged": [
       {
-        "file": "src\\core\\shape-resolver.js",
+        "file": "src/core/shape-resolver.js",
         "line": 22,
         "since": "2026-07-07"
       }
     ],
     "shape:decision:why-default-weights-0.6-0.25-0.15": [
       {
-        "file": "src\\core\\shape-resolver.js",
+        "file": "src/core/shape-resolver.js",
         "line": 54,
         "since": "2026-07-07"
       }
     ],
     "shape:integration:flag-resolver-injection": [
       {
-        "file": "src\\core\\shape-resolver.js",
+        "file": "src/core/shape-resolver.js",
         "line": 109,
         "since": "2026-07-07"
       }
     ],
     "shape:pitfall:flag-resolver-silent-catch": [
       {
-        "file": "src\\core\\shape-resolver.js",
+        "file": "src/core/shape-resolver.js",
         "line": 123,
         "since": "2026-07-07"
       }
     ],
     "shape:data-flow:resolve-pipeline": [
       {
-        "file": "src\\core\\shape-resolver.js",
+        "file": "src/core/shape-resolver.js",
         "line": 130,
         "since": "2026-07-07"
       }
     ],
     "shape:pitfall:isEdge-boundary-precision": [
       {
-        "file": "src\\core\\shape-resolver.js",
+        "file": "src/core/shape-resolver.js",
         "line": 168,
         "since": "2026-07-07"
       }
     ],
     "sp1:pitfall:T1.4-recordOrder-side-effect": [
       {
-        "file": "src\\core\\sort-axis.js",
+        "file": "src/core/sort-axis.js",
         "line": 148,
         "since": "2026-07-07"
       },
       {
-        "file": "src\\render\\observe-views.js",
+        "file": "src/render/observe-views.js",
         "line": 24,
         "since": "2026-07-07"
       }
     ],
     "sp1:data-flow:runtime-drag-reorder": [
       {
-        "file": "src\\core\\sort-axis.js",
+        "file": "src/core/sort-axis.js",
         "line": 151,
         "since": "2026-07-07"
       }
     ],
     "sp1:decision:why-sort-axis-default-time": [
       {
-        "file": "src\\core\\sort-axis.js",
+        "file": "src/core/sort-axis.js",
         "line": 153,
         "since": "2026-07-07"
       }
     ],
+    "s2:pitfall:v1-stub-revival": [
+      {
+        "file": "src/render/instanced-thoughts.js",
+        "line": 20,
+        "since": "2026-07-08"
+      }
+    ],
     "sp1:decision:why-no-layer-in-background-mode-yet": [
       {
-        "file": "src\\render\\observe-state.js",
+        "file": "src/render/observe-state.js",
         "line": 158,
         "since": "2026-07-07"
       }
     ],
     "sp1:integration:observe-views": [
       {
-        "file": "src\\render\\observe-views.js",
+        "file": "src/render/observe-views.js",
         "line": 79,
         "since": "2026-07-07"
       }
     ],
     "sp1:decision:why-canvas-mode-orthogonal-to-observe-mode": [
       {
-        "file": "src\\render\\observe-views.js",
+        "file": "src/render/observe-views.js",
         "line": 81,
         "since": "2026-07-07"
       }
     ],
     "sp1:data-flow:runtime-canvas-mode-switch": [
       {
-        "file": "src\\render\\observe-views.js",
+        "file": "src/render/observe-views.js",
         "line": 84,
         "since": "2026-07-07"
       }
     ],
     "sp1:pitfall:T2.1-ob-content-not-yet-attached": [
       {
-        "file": "src\\render\\observe-views.js",
+        "file": "src/render/observe-views.js",
         "line": 139,
         "since": "2026-07-07"
       }
     ],
     "sp1:pitfall:T2.1-panel-stack-onclose-collision": [
       {
-        "file": "src\\render\\observe-views.js",
+        "file": "src/render/observe-views.js",
         "line": 265,
         "since": "2026-07-07"
+      }
+    ],
+    "s0:decision:entry-switch": [
+      {
+        "file": "src/runtime/flags/v2-migration.js",
+        "line": 12,
+        "since": "2026-07-08"
+      }
+    ],
+    "s2:decision:animation": [
+      {
+        "file": "src/v2/animation/ease.js",
+        "line": 18,
+        "since": "2026-07-20"
+      }
+    ],
+    "s0:decision:action-router": [
+      {
+        "file": "src/v2/core/action-router.js",
+        "line": 24,
+        "since": "2026-07-08"
+      }
+    ],
+    "s0:decision:route": [
+      {
+        "file": "src/v2/core/action-router.js",
+        "line": 105,
+        "since": "2026-07-08"
+      }
+    ],
+    "s0:decision:ai-history": [
+      {
+        "file": "src/v2/core/action-router.js",
+        "line": 125,
+        "since": "2026-07-08"
+      }
+    ],
+    "s1:decision:preset-swap": [
+      {
+        "file": "src/v2/core/cognitive-framework.js",
+        "line": 28,
+        "since": "2026-07-08"
+      }
+    ],
+    "s1:decision:15rules": [
+      {
+        "file": "src/v2/core/diagnostic-engine.js",
+        "line": 17,
+        "since": "2026-07-08"
+      }
+    ],
+    "s1:decision:preset-instance": [
+      {
+        "file": "src/v2/core/layer.js",
+        "line": 29,
+        "since": "2026-07-08"
+      }
+    ],
+    "s1:decision:space-organizer": [
+      {
+        "file": "src/v2/core/mark-system.js",
+        "line": 32,
+        "since": "2026-07-08"
+      }
+    ],
+    "s0:decision:state-store": [
+      {
+        "file": "src/v2/core/scene-state-store.js",
+        "line": 18,
+        "since": "2026-07-08"
+      }
+    ],
+    "s0:decision:apply-action": [
+      {
+        "file": "src/v2/core/scene-state-store.js",
+        "line": 106,
+        "since": "2026-07-08"
+      }
+    ],
+    "s0:decision:ai-serialize": [
+      {
+        "file": "src/v2/core/scene-state-store.js",
+        "line": 127,
+        "since": "2026-07-08"
+      }
+    ],
+    "s0:decision:ai-change-chain": [
+      {
+        "file": "src/v2/core/scene-state-store.js",
+        "line": 139,
+        "since": "2026-07-08"
+      }
+    ],
+    "s0:decision:ai-diagnostic": [
+      {
+        "file": "src/v2/core/scene-state-store.js",
+        "line": 150,
+        "since": "2026-07-08"
+      }
+    ],
+    "s0:decision:ai-snapshot": [
+      {
+        "file": "src/v2/core/scene-state-store.js",
+        "line": 162,
+        "since": "2026-07-08"
+      }
+    ],
+    "s1:decision:crystal-boundary": [
+      {
+        "file": "src/v2/core/space.js",
+        "line": 27,
+        "since": "2026-07-08"
+      }
+    ],
+    "s1:decision:unified-iface": [
+      {
+        "file": "src/v2/core/spatial-query.js",
+        "line": 12,
+        "since": "2026-07-08"
+      }
+    ],
+    "s1:decision:32grid": [
+      {
+        "file": "src/v2/core/spatial-state-field.js",
+        "line": 12,
+        "since": "2026-07-08"
+      }
+    ],
+    "s1:decision:causal-dag": [
+      {
+        "file": "src/v2/core/state-change-chain.js",
+        "line": 12,
+        "since": "2026-07-08"
+      }
+    ],
+    "s1:decision:ring-buffer": [
+      {
+        "file": "src/v2/core/state-snapshot.js",
+        "line": 12,
+        "since": "2026-07-08"
+      }
+    ],
+    "s2:decision:thought-as-crystal": [
+      {
+        "file": "src/v2/core/thought.js",
+        "line": 41,
+        "since": "2026-07-08"
+      }
+    ],
+    "s1:decision:orbit-math": [
+      {
+        "file": "src/v2/core/view-orbit.js",
+        "line": 6,
+        "since": "2026-07-08"
+      },
+      {
+        "file": "src/v2/core/view-orbit.js",
+        "line": 27,
+        "since": "2026-07-08"
+      }
+    ],
+    "s2:decision:dom-over-canvas": [
+      {
+        "file": "src/v2/debug/debug-overlay.js",
+        "line": 37,
+        "since": "2026-07-13"
+      },
+      {
+        "file": "src/v2/interaction/quick-add-panel.js",
+        "line": 20,
+        "since": "2026-07-16"
+      }
+    ],
+    "s2:decision:console-fallback": [
+      {
+        "file": "src/v2/debug/debug-overlay.js",
+        "line": 40,
+        "since": "2026-07-13"
+      },
+      {
+        "file": "src/v2/interaction/quick-add-panel.js",
+        "line": 23,
+        "since": "2026-07-16"
+      }
+    ],
+    "s1:decision:framework-switcher": [
+      {
+        "file": "src/v2/interaction/framework-switcher.js",
+        "line": 12,
+        "since": "2026-07-08"
+      }
+    ],
+    "s2:decision:quick-add-panel": [
+      {
+        "file": "src/v2/interaction/quick-add-panel.js",
+        "line": 16,
+        "since": "2026-07-16"
+      }
+    ],
+    "s2:decision:shortkey-n": [
+      {
+        "file": "src/v2/interaction/quick-add-panel.js",
+        "line": 26,
+        "since": "2026-07-16"
+      }
+    ],
+    "s2:decision:position-topright": [
+      {
+        "file": "src/v2/interaction/quick-add-panel.js",
+        "line": 29,
+        "since": "2026-07-16"
+      }
+    ],
+    "s1:decision:v2-main": [
+      {
+        "file": "src/v2/main.js",
+        "line": 34,
+        "since": "2026-07-08"
+      }
+    ],
+    "s2:decision:s2-8-entity-integration": [
+      {
+        "file": "src/v2/main.js",
+        "line": 38,
+        "since": "2026-07-10"
+      }
+    ],
+    "s2:decision:s2-10-pipeline-integration": [
+      {
+        "file": "src/v2/main.js",
+        "line": 43,
+        "since": "2026-07-11"
+      }
+    ],
+    "s2:decision:s2-11-12-debug-integration": [
+      {
+        "file": "src/v2/main.js",
+        "line": 48,
+        "since": "2026-07-14"
+      }
+    ],
+    "s2:decision:thought-entity-integration": [
+      {
+        "file": "src/v2/main.js",
+        "line": 195,
+        "since": "2026-07-10"
+      }
+    ],
+    "s2:decision:debug-overlay-integration": [
+      {
+        "file": "src/v2/main.js",
+        "line": 312,
+        "since": "2026-07-14"
+      }
+    ],
+    "s2:decision:quick-add-integration": [
+      {
+        "file": "src/v2/main.js",
+        "line": 319,
+        "since": "2026-07-16"
+      }
+    ],
+    "s1:decision:global-entry": [
+      {
+        "file": "src/v2/main.js",
+        "line": 340,
+        "since": "2026-07-08"
+      }
+    ],
+    "s1:decision:layer-bridge": [
+      {
+        "file": "src/v2/persistence/layer-bridge.js",
+        "line": 12,
+        "since": "2026-07-08"
+      }
+    ],
+    "s2:decision:thought-bridge": [
+      {
+        "file": "src/v2/persistence/thought-bridge.js",
+        "line": 13,
+        "since": "2026-07-08"
+      }
+    ],
+    "s1:decision:base-plane": [
+      {
+        "file": "src/v2/render/base-plane.js",
+        "line": 14,
+        "since": "2026-07-08"
+      }
+    ],
+    "s1:decision:crystal-space": [
+      {
+        "file": "src/v2/render/crystal-space.js",
+        "line": 12,
+        "since": "2026-07-08"
+      }
+    ],
+    "s2:decision:constants-from-measurement": [
+      {
+        "file": "src/v2/render/expected-calculator.js",
+        "line": 33,
+        "since": "2026-07-13"
+      }
+    ],
+    "s1:decision:layer-renderer": [
+      {
+        "file": "src/v2/render/layer-renderer.js",
+        "line": 12,
+        "since": "2026-07-08"
+      }
+    ],
+    "s2:decision:memory-mesh": [
+      {
+        "file": "src/v2/render/memory-mesh.js",
+        "line": 26,
+        "since": "2026-07-09"
+      }
+    ],
+    "s1:decision:operation-zone": [
+      {
+        "file": "src/v2/render/operation-zone.js",
+        "line": 14,
+        "since": "2026-07-08"
+      }
+    ],
+    "s2:decision:render-pipeline-5-stages": [
+      {
+        "file": "src/v2/render/render-pipeline.js",
+        "line": 31,
+        "since": "2026-07-11"
+      }
+    ],
+    "s2:pitfall:dont-throw-on-overrun": [
+      {
+        "file": "src/v2/render/render-pipeline.js",
+        "line": 36,
+        "since": "2026-07-11"
+      }
+    ],
+    "s1:decision:space-boundary": [
+      {
+        "file": "src/v2/render/space-boundary.js",
+        "line": 12,
+        "since": "2026-07-08"
+      }
+    ],
+    "s2:decision:thought-mesh": [
+      {
+        "file": "src/v2/render/thought-mesh.js",
+        "line": 25,
+        "since": "2026-07-09"
+      }
+    ],
+    "s1:decision:orbit-camera": [
+      {
+        "file": "src/v2/render/view-orbit-camera.js",
+        "line": 12,
+        "since": "2026-07-08"
       }
     ]
   }
