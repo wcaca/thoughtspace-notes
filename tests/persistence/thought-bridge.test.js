@@ -146,4 +146,55 @@ describe('thought-bridge', () => {
     expect(memMap.get('a').order).toBe(99);
     bridge.destroy();
   });
+
+  // === S2.26: flashAmplitudeOverride (S2.25 per-thought 振幅覆盖) 持久化 ===
+  // WHY: 之前 META_FIELDS 没 flashAmplitudeOverride, 用户 UI 调过的 thought
+  //   振幅刷新页面就丢, 体验崩. S2.26 加进 META_FIELDS + 兼容 v2 config 字段
+  it('S2.26 persists flashAmplitudeOverride (v1 顶层) across sync', () => {
+    const { doc, yMap, memMap } = makeContext();
+    const t = { id: 'a', text: 'a', x: 0, y: 0, z: 0, temperature: 0.5, flashAmplitudeOverride: 0.15 };
+    memMap.set('a', t);
+    const bridge = createThoughtBridge(memMap, yMap, doc);
+    bridge.syncToDoc();
+    // Yjs 应该持久化这个字段
+    expect(yMap.get('a').flashAmplitudeOverride).toBe(0.15);
+    // 再 syncToStore 拿回来, 也得有
+    memMap.clear();
+    bridge.syncToStore();
+    expect(memMap.get('a').flashAmplitudeOverride).toBe(0.15);
+    bridge.destroy();
+  });
+
+  it('S2.26 persists flashAmplitudeOverride (v2 config) by promoting to 顶层', () => {
+    // v2 Thought class: flashAmplitudeOverride 在 config 里
+    // phase-flash 双源读法优先 v1 顶层, 持久化时如果只有 config, 应提升到顶层
+    // 否则反序列化后 v1 优先读 null, 走查表, 振幅覆盖失效
+    const { doc, yMap, memMap } = makeContext();
+    const t = {
+      id: 'a', text: 'a', x: 0, y: 0, z: 0, temperature: 0.5,
+      config: { flashAmplitudeOverride: 0.08, material: 'crystal', shape: 'octahedron' }
+    };
+    memMap.set('a', t);
+    const bridge = createThoughtBridge(memMap, yMap, doc);
+    bridge.syncToDoc();
+    const persisted = yMap.get('a');
+    // 顶层必须有 (即使原始 thought 只有 config.flashAmplitudeOverride)
+    expect(persisted.flashAmplitudeOverride).toBe(0.08);
+    // config 也要保留 (其他 v2 字段 material/shape 也得在)
+    expect(persisted.config.flashAmplitudeOverride).toBe(0.08);
+    expect(persisted.config.material).toBe('crystal');
+    bridge.destroy();
+  });
+
+  it('S2.26 backwards compat: v1 thought (no config field) 仍正常持久化', () => {
+    const { doc, yMap, memMap } = makeContext();
+    const t = { id: 'a', text: 'a', x: 0, y: 0, z: 0, temperature: 0.5 };
+    memMap.set('a', t);
+    const bridge = createThoughtBridge(memMap, yMap, doc);
+    bridge.syncToDoc();
+    // 没 config 字段, META_FIELDS 用 'in' 检查会跳过
+    expect(yMap.get('a').config).toBeUndefined();
+    expect(yMap.get('a').flashAmplitudeOverride).toBeUndefined();
+    bridge.destroy();
+  });
 });
